@@ -1,4 +1,4 @@
-package ar.edu.itba.ss.tpe6;
+package ar.edu.itba.ss.tpf;
 
 import java.util.Collections;
 import java.util.List;
@@ -7,13 +7,15 @@ import java.util.Objects;
 public class Grid {
 	
 	private List<Particle> particles;
-	private final double externalRadius;
-	private final double internalRadius;
+	private final double width;
+	private final double depth;
+	private final double height;
 	
 	public Grid(final List<Particle> particles) {
 		this.particles = particles;
-		this.externalRadius = Configuration.externalRadius;
-		this.internalRadius = Configuration.INTERNAL_RADIUS;
+		this.width = Configuration.WIDTH;
+		this.depth = Configuration.DEPTH;
+		this.height = Configuration.HEIGHT;
 	}
 	
 	public List<Particle> getParticles() {
@@ -25,12 +27,16 @@ public class Grid {
 		particles = newParticles;
 	}
 
-	public double getExternalRadius() {
-		return externalRadius;
+	public double getWidth() {
+		return width;
 	}
 
-	public double getInternalRadius() {
-		return internalRadius;
+	public double getDepth() {
+		return depth;
+	}
+
+	public double getHeight() {
+		return height;
 	}
 	
 }

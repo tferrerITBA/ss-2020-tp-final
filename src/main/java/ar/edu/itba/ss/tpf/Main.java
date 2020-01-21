@@ -1,4 +1,4 @@
-package ar.edu.itba.ss.tpe6;
+package ar.edu.itba.ss.tpf;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -15,9 +15,9 @@ public class Main {
 	
 	private static void executeSingleRun() {
 		List<Particle> particles = Configuration.generateRandomInputFilesAndParseConfiguration();
-		Configuration.writeOvitoOutputFile(0, particles);
+//		Configuration.writeOvitoOutputFile(0, particles);
 		Grid grid = new Grid(particles);
-		SocialForceManager manager = new SocialForceManager(grid);
+		PredictiveCollisionAvoidanceManager manager = new PredictiveCollisionAvoidanceManager(grid);
 		manager.execute();
 	}
 
