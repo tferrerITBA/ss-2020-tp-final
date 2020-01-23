@@ -9,7 +9,7 @@ public class PredictiveCollisionAvoidanceManager {
     
     public PredictiveCollisionAvoidanceManager(final Grid grid) {
     	this.grid = grid;
-    	this.goal = Configuration.getDeathStarPosition().getSumVector(new Point(0, Configuration.DEATH_STAR_RADIUS + Configuration.REBEL_SHIP_RADIUS, 0));
+    	this.goal = Configuration.DEATH_STAR_POSITION.getSumVector(new Point(0, Configuration.DEATH_STAR_RADIUS + Configuration.REBEL_SHIP_RADIUS, 0));
     	this.timeStep = Configuration.TIME_STEP;
     }
     

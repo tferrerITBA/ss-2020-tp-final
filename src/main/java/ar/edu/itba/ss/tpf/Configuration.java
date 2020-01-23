@@ -22,9 +22,11 @@ public class Configuration {
 	
 	public static final double DEATH_STAR_RADIUS = 20.0; // m
 	public static final double DEATH_STAR_MASS = 10.0; // m CAMBIAR
-	private static Point deathStarPosition;
+	public static Point DEATH_STAR_POSITION = new Point(WIDTH - DEATH_STAR_RADIUS - (DEPTH - 2 * DEATH_STAR_RADIUS) / 2, HEIGHT / 2, DEPTH / 2);
 	
-	public static final int PARTICLE_COUNT = 2;
+	public static final double TURRET_RADIUS = 0.5; // m
+	public static final int TURRET_COUNT = 8;
+	
 	public static final double TIME_STEP = 0.1;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
 	public static final double DESIRED_VEL = 1; // m/s
 	public static final double TAU = 0.5; // s
@@ -141,6 +143,7 @@ public class Configuration {
 		
 		particles.add(createRebelShip());
 		particles.add(createDeathStar());
+		particles.addAll(createTurrets());
 
 //		for(int i = 0; i < particleCount; i++) {
 //			double radius = r.nextDouble() * (MAX_PARTICLE_RADIUS - MIN_PARTICLE_RADIUS) + MIN_PARTICLE_RADIUS;
@@ -157,9 +160,39 @@ public class Configuration {
 	}
     
     private static Particle createDeathStar() {
-    	double initX = WIDTH - DEATH_STAR_RADIUS - (DEPTH - 2 * DEATH_STAR_RADIUS) / 2;
-    	deathStarPosition = new Point(initX, HEIGHT / 2, DEPTH / 2);
-    	return new Particle(DEATH_STAR_RADIUS, DEATH_STAR_MASS, initX, HEIGHT / 2, DEPTH / 2);
+    	return new Particle(DEATH_STAR_RADIUS, DEATH_STAR_MASS, DEATH_STAR_POSITION.getX(), DEATH_STAR_POSITION.getY(),
+    			DEATH_STAR_POSITION.getZ());
+	}
+    
+    @SuppressWarnings("unused")
+	private static List<Particle> createTurrets() {
+    	List<Particle> turrets = new ArrayList<>();
+    	
+    	if(TURRET_COUNT == 0) {
+    		return turrets;
+    	}
+    	
+    	/* Turrets are evenly spaced */
+    	double x = DEATH_STAR_POSITION.getX() - DEATH_STAR_RADIUS;
+    	double y = DEATH_STAR_POSITION.getY();
+    	double z = DEATH_STAR_POSITION.getZ();
+    	turrets.add(new Turret(x, y, z));
+    	
+    	Point diffVector = (new Point(x, y, z)).getDiffVector(DEATH_STAR_POSITION);
+    	double deltaAngle = 2 * Math.PI / TURRET_COUNT;
+    	for(int i = 1; i < TURRET_COUNT; i++) {
+    		
+    		x = diffVector.getX() * Math.cos(deltaAngle) - diffVector.getZ() * Math.sin(deltaAngle);
+    		z = diffVector.getX() * Math.sin(deltaAngle) + diffVector.getZ() * Math.cos(deltaAngle);
+    		
+    		diffVector.setX(x);
+    		diffVector.setZ(z);
+    		
+    		Point newTurretPosition = DEATH_STAR_POSITION.getSumVector(diffVector);
+    		turrets.add(new Turret(newTurretPosition.getX(), newTurretPosition.getY(), newTurretPosition.getZ()));
+    	}
+    	
+    	return turrets;
 	}
 
 //	public static boolean validateParticlePosition(final List<Particle> particles,
@@ -195,7 +228,7 @@ public class Configuration {
 	public static void writeOvitoOutputFile(double time, List<Particle> particles) {
 		File outputFile = new File(OUTPUT_FILE_NAME);
 		try(FileWriter fw = new FileWriter(outputFile, true)) {
-			fw.write(PARTICLE_COUNT + "\n");
+			fw.write(particles.size() + "\n");
 			fw.write("Lattice=\"" + WIDTH + " 0.0 0.0 0.0 " + DEPTH + " 0.0 0.0 0.0 " + HEIGHT
 				+ "\" Properties=id:I:1:radius:R:1:pos:R:3:velo:R:3 Time=" + String.format(Locale.US, "%.2g", time) + "\n");
 			for(Particle p : particles) {
@@ -216,10 +249,6 @@ public class Configuration {
 	
 	public static double getTimeLimit() {
 		return timeLimit;
-	}
-	
-	public static Point getDeathStarPosition() {
-		return deathStarPosition;
 	}
 
 //	public static double getTimeStep() {

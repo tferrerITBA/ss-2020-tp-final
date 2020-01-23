@@ -1,7 +1,6 @@
 package ar.edu.itba.ss.tpf;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -23,7 +22,15 @@ public class Particle implements Cloneable {
 		this.mass = mass;
 		this.position = new Point(x, y, z);
 		this.velocity = new Point(0, 0, 0);
-		this.neighbors = new HashSet<>();
+		//this.neighbors = new HashSet<>();
+	}
+	
+	public Particle(final double radius, final double x, final double y, final double z) {
+		this.id = count++;
+		this.radius = radius;
+		this.position = new Point(x, y, z);
+		this.velocity = new Point(0, 0, 0);
+		//this.neighbors = new HashSet<>();
 	}
 	
 //	public Particle(final double radius, final double mass, final double x, final double y, final double vx, final double vy) {
