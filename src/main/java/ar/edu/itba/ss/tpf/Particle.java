@@ -97,6 +97,10 @@ public class Particle implements Cloneable {
 		position.setY(y);
 		position.setZ(z);
 	}
+	
+	public void setPosition(Point p) {
+		position = p;
+	}
 
 	public void calculatePressure(double forces) {
 		double perimeter =  Math.PI * 2.0 * radius;
@@ -115,6 +119,10 @@ public class Particle implements Cloneable {
 		velocity.setX(vx);
 		velocity.setY(vy);
 		velocity.setZ(vz);
+	}
+	
+	public void setVelocity(Point v) {
+		velocity = v;
 	}
 	
 //	public double getVelocityAngle() {

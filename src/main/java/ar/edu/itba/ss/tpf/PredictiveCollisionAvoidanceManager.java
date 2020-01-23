@@ -3,12 +3,14 @@ package ar.edu.itba.ss.tpf;
 public class PredictiveCollisionAvoidanceManager {
 	
     private final Grid grid;
+    private final Point goal;
     private final double timeStep;
 	private double accumulatedTime = 0.0;
     
     public PredictiveCollisionAvoidanceManager(final Grid grid) {
     	this.grid = grid;
-    	timeStep = Configuration.TIME_STEP;
+    	this.goal = Configuration.getDeathStarPosition().getSumVector(new Point(0, Configuration.DEATH_STAR_RADIUS + Configuration.REBEL_SHIP_RADIUS, 0));
+    	this.timeStep = Configuration.TIME_STEP;
     }
     
     public void execute() {
@@ -19,17 +21,26 @@ public class PredictiveCollisionAvoidanceManager {
 //    	List<Particle> predictedParticles = new ArrayList<>(prevParticles.size());
 //    	prevParticles.forEach(p -> predictedParticles.add(p.clone()));
 //    	
-//		while(Double.compare(accumulatedTime, Configuration.getTimeLimit()) <= 0) {
-//			if (accumulatedPrintingTime >= printingTimeLimit) {
+		while(Double.compare(accumulatedTime, Configuration.getTimeLimit()) <= 0) {
+			if (accumulatedPrintingTime >= printingTimeLimit) {
 				Configuration.writeOvitoOutputFile(accumulatedTime, grid.getParticles());
-//				accumulatedPrintingTime = 0;
-//			}
-//			accumulatedTime += timeStep;
-//			accumulatedPrintingTime += timeStep;
-//			
-//			grid.setParticles(updateParticles(prevParticles, predictedParticles));
-//		}
+				accumulatedPrintingTime = 0;
+			}
+			accumulatedTime += timeStep;
+			accumulatedPrintingTime += timeStep;
+			
+			//grid.setParticles(updateParticles(prevParticles, predictedParticles));
+			Particle rebelShip = grid.getParticles().get(0);
+			rebelShip.setVelocity(rebelShip.getVelocity().getSumVector(getGoalForce(rebelShip, goal).getScalarMultiplication(timeStep)));
+			rebelShip.setPosition(rebelShip.getPosition().getSumVector(rebelShip.getVelocity().getScalarMultiplication(timeStep)));
+		}
 	}
+    
+    private Point getGoalForce(Particle particle, Point goal) {
+    	Point goalUnitVector = goal.getDirectionUnitVector(particle.getPosition());
+    	return goalUnitVector.getScalarMultiplication(Configuration.DESIRED_VEL)
+    			.getDiffVector(particle.getVelocity()).getScalarDivision(Configuration.TAU);
+    }
     
 //    private List<Particle> updateParticles(final List<Particle> prevParticles, final List<Particle> predictedParticles) {
 //    	List<Particle> currentParticles = grid.getParticles();

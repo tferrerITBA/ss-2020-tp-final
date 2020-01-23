@@ -10,6 +10,34 @@ public class Point {
 		this.y = y;
 		this.z = z;
 	}
+	
+	public Point normalize() {
+		return this.getScalarDivision(this.getNorm());
+	}
+	
+	public double getNorm() {
+		return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2));
+	}
+	
+	public Point getScalarDivision(double n) {
+		return this.getScalarMultiplication(1 / n);
+	}
+	
+	public Point getScalarMultiplication(double n) {
+		return new Point(this.x * n, this.y * n, this.z * n);
+	}
+	
+	public Point getDiffVector(Point other) {
+		return new Point(this.x - other.getX(), this.y - other.getY(), this.z - other.getZ());
+	}
+	
+	public Point getDirectionUnitVector(Point other) {
+		return this.getDiffVector(other).normalize();
+	}
+	
+	public Point getSumVector(Point other) {
+		return new Point(this.x + other.getX(), this.y + other.getY(), this.z + other.getZ());
+	}
 
 	public double getX() {
 		return x;

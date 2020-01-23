@@ -22,9 +22,16 @@ public class Configuration {
 	
 	public static final double DEATH_STAR_RADIUS = 20.0; // m
 	public static final double DEATH_STAR_MASS = 10.0; // m CAMBIAR
+	private static Point deathStarPosition;
 	
 	public static final int PARTICLE_COUNT = 2;
+	public static final double TIME_STEP = 0.1;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
+	public static final double DESIRED_VEL = 1; // m/s
+	public static final double TAU = 0.5; // s
 	
+	private static double timeLimit;
+	private static String fileName = "";
+	///////
 	public static final double A_CONSTANT = 2000; // N
 	public static final double B_CONSTANT = 0.08; // m
 	public static final double MIN_PARTICLE_RADIUS = 0.25; // m
@@ -32,13 +39,8 @@ public class Configuration {
 	public static final double K_NORM = 1.2e5; // kg/s^2
 	public static final double K_TANG = 2 * K_NORM; // kg/(m s)
 	//public static final double PARTICLE_MASS = 80; // kg
-	public static final double TAU = 0.5; // s
-	public static final double DESIRED_VEL = 0.8; // m/s
 	//private static double timeStep = 0.1 * Math.sqrt(PARTICLE_MASS / K_NORM);
-	public static final double TIME_STEP = 0.1;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
-	private static double timeLimit;
 //	private static final int INVALID_POSITION_LIMIT = 500;
-	private static String fileName = "";
 	
 	public static void requestParameters() {
 		Scanner scanner = new Scanner(System.in);
@@ -156,6 +158,7 @@ public class Configuration {
     
     private static Particle createDeathStar() {
     	double initX = WIDTH - DEATH_STAR_RADIUS - (DEPTH - 2 * DEATH_STAR_RADIUS) / 2;
+    	deathStarPosition = new Point(initX, HEIGHT / 2, DEPTH / 2);
     	return new Particle(DEATH_STAR_RADIUS, DEATH_STAR_MASS, initX, HEIGHT / 2, DEPTH / 2);
 	}
 
@@ -213,6 +216,10 @@ public class Configuration {
 	
 	public static double getTimeLimit() {
 		return timeLimit;
+	}
+	
+	public static Point getDeathStarPosition() {
+		return deathStarPosition;
 	}
 
 //	public static double getTimeStep() {
