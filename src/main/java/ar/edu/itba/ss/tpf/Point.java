@@ -38,6 +38,10 @@ public class Point {
 	public Point getSumVector(Point other) {
 		return new Point(this.x + other.getX(), this.y + other.getY(), this.z + other.getZ());
 	}
+	
+	public double getDotProduct(Point other) {
+		return this.x * other.getX() + this.y * other.getY() + this.z * other.getZ();
+	}
 
 	public double getX() {
 		return x;
@@ -61,6 +65,11 @@ public class Point {
 
 	public void setZ(double z) {
 		this.z = z;
+	}
+
+	@Override
+	public String toString() {
+		return "Point [x=" + x + ", y=" + y + ", z=" + z + "]";
 	}
 
 }

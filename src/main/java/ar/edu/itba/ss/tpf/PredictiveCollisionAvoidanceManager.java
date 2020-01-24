@@ -33,6 +33,12 @@ public class PredictiveCollisionAvoidanceManager {
 			Particle rebelShip = grid.getParticles().get(0);
 			rebelShip.setVelocity(rebelShip.getVelocity().getSumVector(getGoalForce(rebelShip, goal).getScalarMultiplication(timeStep)));
 			rebelShip.setPosition(rebelShip.getPosition().getSumVector(rebelShip.getVelocity().getScalarMultiplication(timeStep)));
+			
+			for(int i = 0; i < grid.getTurrets().size(); i++) {
+				Turret turret = grid.getTurrets().get(i);
+				turret.fire(grid.getRebelShip(), grid.getDeathStar());
+			}
+			return;
 		}
 	}
     

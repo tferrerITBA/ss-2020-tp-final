@@ -24,7 +24,9 @@ public class Configuration {
 	public static final double DEATH_STAR_MASS = 10.0; // m CAMBIAR
 	public static Point DEATH_STAR_POSITION = new Point(WIDTH - DEATH_STAR_RADIUS - (DEPTH - 2 * DEATH_STAR_RADIUS) / 2, HEIGHT / 2, DEPTH / 2);
 	
+	private static List<Turret> turrets = new ArrayList<Turret>();
 	public static final double TURRET_RADIUS = 0.5; // m
+	public static final double TURRET_FIRE_RATE = 0.5; // s
 	public static final int TURRET_COUNT = 8;
 	
 	public static final double TIME_STEP = 0.1;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
@@ -143,7 +145,8 @@ public class Configuration {
 		
 		particles.add(createRebelShip());
 		particles.add(createDeathStar());
-		particles.addAll(createTurrets());
+		createTurrets();
+		particles.addAll(turrets);
 
 //		for(int i = 0; i < particleCount; i++) {
 //			double radius = r.nextDouble() * (MAX_PARTICLE_RADIUS - MIN_PARTICLE_RADIUS) + MIN_PARTICLE_RADIUS;
@@ -165,11 +168,9 @@ public class Configuration {
 	}
     
     @SuppressWarnings("unused")
-	private static List<Particle> createTurrets() {
-    	List<Particle> turrets = new ArrayList<>();
-    	
+	private static void createTurrets() {
     	if(TURRET_COUNT == 0) {
-    		return turrets;
+    		return;
     	}
     	
     	/* Turrets are evenly spaced */
@@ -192,7 +193,7 @@ public class Configuration {
     		turrets.add(new Turret(newTurretPosition.getX(), newTurretPosition.getY(), newTurretPosition.getZ()));
     	}
     	
-    	return turrets;
+    	return;
 	}
 
 //	public static boolean validateParticlePosition(final List<Particle> particles,
@@ -245,6 +246,10 @@ public class Configuration {
 				+ particle.getPosition().getX() + " " + particle.getPosition().getZ() + " " + particle.getPosition().getY() + " " 
 				+ particle.getVelocity().getX() + " " + particle.getVelocity().getZ() + " " + particle.getVelocity().getY());
 		fw.write('\n');
+	}
+	
+	public static List<Turret> getTurrets() {
+		return turrets;
 	}
 	
 	public static double getTimeLimit() {
