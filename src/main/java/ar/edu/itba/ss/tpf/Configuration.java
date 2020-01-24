@@ -26,7 +26,9 @@ public class Configuration {
 	
 	private static List<Turret> turrets = new ArrayList<Turret>();
 	public static final double TURRET_RADIUS = 0.5; // m
-	public static final double TURRET_FIRE_RATE = 0.5; // s
+	public static final double TURRET_FIRE_RATE = 1; // s
+	public static final double TURRET_PROJECTILE_RADIUS = 0.5; // m
+	public static final double TURRET_PROJECTILE_SPEED = 50; // m/s
 	public static final int TURRET_COUNT = 8;
 	
 	public static final double TIME_STEP = 0.1;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
@@ -147,7 +149,7 @@ public class Configuration {
 		particles.add(createDeathStar());
 		createTurrets();
 		particles.addAll(turrets);
-
+		
 //		for(int i = 0; i < particleCount; i++) {
 //			double radius = r.nextDouble() * (MAX_PARTICLE_RADIUS - MIN_PARTICLE_RADIUS) + MIN_PARTICLE_RADIUS;
 //			Particle p = new Particle(radius, PARTICLE_MASS, 0, 0, INIT_VEL, INIT_VEL);

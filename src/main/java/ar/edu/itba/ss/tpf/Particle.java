@@ -33,6 +33,15 @@ public class Particle implements Cloneable {
 		//this.neighbors = new HashSet<>();
 	}
 	
+	public Particle(final double radius, final double x, final double y, final double z,
+			final double vx, final double vy, final double vz) {
+		this.id = count++;
+		this.radius = radius;
+		this.position = new Point(x, y, z);
+		this.velocity = new Point(vx, vy, vz);
+		//this.neighbors = new HashSet<>();
+	}
+	
 //	public Particle(final double radius, final double mass, final double x, final double y, final double vx, final double vy) {
 //		this.id = count++;
 //		this.radius = radius;

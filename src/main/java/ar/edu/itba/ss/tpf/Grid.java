@@ -1,6 +1,6 @@
 package ar.edu.itba.ss.tpf;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -10,6 +10,7 @@ public class Grid {
 	private Particle rebelShip;
 	private Particle deathStar;
 	private List<Turret> turrets;
+	private List<Projectile> projectiles;
 	private final double width;
 	private final double depth;
 	private final double height;
@@ -19,13 +20,14 @@ public class Grid {
 		this.rebelShip = particles.get(0);
 		this.deathStar = particles.get(1);
 		this.turrets = Configuration.getTurrets();
+		this.projectiles = new ArrayList<>();
 		this.width = Configuration.WIDTH;
 		this.depth = Configuration.DEPTH;
 		this.height = Configuration.HEIGHT;
 	}
 	
 	public List<Particle> getParticles() {
-		return Collections.unmodifiableList(particles);
+		return particles;
 	}
 	
 	public void setParticles(List<Particle> newParticles) {
@@ -43,6 +45,10 @@ public class Grid {
 
 	public List<Turret> getTurrets() {
 		return turrets;
+	}
+
+	public List<Projectile> getProjectiles() {
+		return projectiles;
 	}
 
 	public double getWidth() {

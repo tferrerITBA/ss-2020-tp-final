@@ -1,5 +1,7 @@
 package ar.edu.itba.ss.tpf;
 
+import java.util.List;
+
 public class Turret extends Particle {
 	private double lastTimeSinceFired;
 	
@@ -7,10 +9,35 @@ public class Turret extends Particle {
 		super(Configuration.TURRET_RADIUS, x, y, z);
 	}
 	
-	public void fire(Particle rebelShip, Particle deathStar) {
+	public void fire(double timeStep, Particle rebelShip, Particle deathStar, List<Particle> particles, List<Projectile> projectiles) {
 		if(lastTimeSinceFired > Configuration.TURRET_FIRE_RATE && hasLineOfSight(rebelShip, deathStar)) {
-			lastTimeSinceFired = 0.0;
-			// Create projectile
+			lastTimeSinceFired = 0;
+			
+			/* Projectiles are thrown as a succession of particles to look like laser beams */
+			Point targetVector = rebelShip.getPosition().getDirectionUnitVector(this.getPosition());
+			Point initPosition = this.getPosition();
+			double deltaPosition = 0.25;
+			Point diffProjectilePosition = initPosition
+					.getSumVector(targetVector.getScalarMultiplication(deltaPosition)).getDiffVector(initPosition);
+			Point projectileVelocity = targetVector.getScalarMultiplication(Configuration.TURRET_PROJECTILE_SPEED);
+			for(int i = 0; i < 9; i++) {
+				Point newPosition = initPosition.getSumVector(diffProjectilePosition.getScalarMultiplication(i));
+				Projectile projectile = new Projectile(newPosition.getX(), newPosition.getY(), newPosition.getZ(),
+						projectileVelocity.getX(), projectileVelocity.getY(), projectileVelocity.getZ());
+				particles.add(projectile);
+				projectiles.add(projectile);
+			}
+			/*particles.add(new Particle(0.5, 1, 1, 1));
+			particles.add(new Particle(0.5, 1.25, 1, 1));
+			particles.add(new Particle(0.5, 1.5, 1, 1));
+			particles.add(new Particle(0.5, 1.75, 1, 1));
+			particles.add(new Particle(0.5, 2, 1, 1));
+			particles.add(new Particle(0.5, 2.25, 1, 1));
+			particles.add(new Particle(0.5, 2.5, 1, 1));
+			particles.add(new Particle(0.5, 2.75, 1, 1));
+			particles.add(new Particle(0.5, 3, 1, 1));*/
+		} else {
+			lastTimeSinceFired += timeStep;
 		}
 	}
 

@@ -1,5 +1,8 @@
 package ar.edu.itba.ss.tpf;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PredictiveCollisionAvoidanceManager {
 	
     private final Grid grid;
@@ -23,23 +26,48 @@ public class PredictiveCollisionAvoidanceManager {
 //    	
 		while(Double.compare(accumulatedTime, Configuration.getTimeLimit()) <= 0) {
 			if (accumulatedPrintingTime >= printingTimeLimit) {
+				deleteOutOfBoundsProjectiles();
 				Configuration.writeOvitoOutputFile(accumulatedTime, grid.getParticles());
 				accumulatedPrintingTime = 0;
 			}
 			accumulatedTime += timeStep;
 			accumulatedPrintingTime += timeStep;
 			
-			//grid.setParticles(updateParticles(prevParticles, predictedParticles));
-			Particle rebelShip = grid.getParticles().get(0);
-			rebelShip.setVelocity(rebelShip.getVelocity().getSumVector(getGoalForce(rebelShip, goal).getScalarMultiplication(timeStep)));
-			rebelShip.setPosition(rebelShip.getPosition().getSumVector(rebelShip.getVelocity().getScalarMultiplication(timeStep)));
-			
 			for(int i = 0; i < grid.getTurrets().size(); i++) {
 				Turret turret = grid.getTurrets().get(i);
-				turret.fire(grid.getRebelShip(), grid.getDeathStar());
+				turret.fire(timeStep, grid.getRebelShip(), grid.getDeathStar(), grid.getParticles(), grid.getProjectiles());
 			}
-			return;
+			
+			//grid.setParticles(updateParticles(prevParticles, predictedParticles));
+			moveRebelShip();
+			moveProjectiles();
 		}
+	}
+
+	private void moveRebelShip() {
+    	Particle rebelShip = grid.getRebelShip();
+		rebelShip.setVelocity(rebelShip.getVelocity().getSumVector(getGoalForce(rebelShip, goal).getScalarMultiplication(timeStep)));
+		rebelShip.setPosition(rebelShip.getPosition().getSumVector(rebelShip.getVelocity().getScalarMultiplication(timeStep)));
+    }
+    
+    private void moveProjectiles() {
+    	List<Projectile> projectiles = grid.getProjectiles();
+    	for(Projectile p : projectiles) {
+    		p.setPosition(p.getPosition().getSumVector(p.getVelocity().getScalarMultiplication(timeStep)));
+    	}
+    }
+    
+    private void deleteOutOfBoundsProjectiles() {
+    	List<Projectile> projectiles = grid.getProjectiles();
+    	List<Projectile> toDelete = new ArrayList<>();
+    	for(Projectile p : projectiles) {
+    		Point pos = p.getPosition();
+    		if(pos.getX() < 0 || pos.getY() < 0 || pos.getZ() < 0 || pos.getX() > Configuration.WIDTH
+    				|| pos.getY() > Configuration.HEIGHT || pos.getZ() > Configuration.DEPTH) {
+    			toDelete.add(p);
+    		}
+    	}
+    	grid.getParticles().removeAll(toDelete);
 	}
     
     private Point getGoalForce(Particle particle, Point goal) {
