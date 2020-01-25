@@ -13,7 +13,7 @@ public class Configuration {
 	private static String INPUT_FILE_NAME = "config.txt";
 	private static String OUTPUT_FILE_NAME = "ovito_output.xyz";
 	public static final double WIDTH = 200.0; // m
-	public static final double HEIGHT = 50.0; // m
+	public static final double HEIGHT = 75.0; // m
 	public static final double DEPTH = 100.0; // m
 	
 	public static final double REBEL_SHIP_RADIUS = 1.5; // m
@@ -27,8 +27,8 @@ public class Configuration {
 	
 	private static List<Turret> turrets = new ArrayList<Turret>();
 	public static final double TURRET_RADIUS = 0.5; // m
-	public static final double TURRET_FIRE_RATE = 1; // s
-	public static final int PROJECTILE_PARTICLE_COUNT = 9;
+	public static final double TURRET_FIRE_RATE = 2; // s
+	public static final int PROJECTILE_PARTICLE_COUNT = 3;
 	public static final double TURRET_PROJECTILE_RADIUS = 0.5; // m
 	public static final double TURRET_PROJECTILE_SPEED = 40; // m/s
 	public static final int TURRET_COUNT = 8;
@@ -179,13 +179,15 @@ public class Configuration {
     		return;
     	}
     	
-    	createTurretLayer(DEATH_STAR_POSITION.getX() - DEATH_STAR_RADIUS, DEATH_STAR_POSITION.getY(), DEATH_STAR_POSITION.getZ());
-    	createTurretLayer(DEATH_STAR_POSITION.getX() - 0.866 * DEATH_STAR_RADIUS, DEATH_STAR_POSITION.getY() + DEATH_STAR_RADIUS / 2, DEATH_STAR_POSITION.getZ());
+    	createTurretLayer(DEATH_STAR_POSITION.getX() - DEATH_STAR_RADIUS, DEATH_STAR_POSITION.getY());
+    	createTurretLayer(DEATH_STAR_POSITION.getX() - 0.866 * DEATH_STAR_RADIUS, DEATH_STAR_POSITION.getY() + DEATH_STAR_RADIUS / 2);
+    	createTurretLayer(DEATH_STAR_POSITION.getX() - 0.866 * DEATH_STAR_RADIUS, DEATH_STAR_POSITION.getY() - DEATH_STAR_RADIUS / 2);
     	
     	return;
 	}
     
-    private static void createTurretLayer(double x, double y, double z) {
+    private static void createTurretLayer(double x, double y) {
+    	double z = DEATH_STAR_POSITION.getZ();
     	/* Turrets are evenly spaced */
     	turrets.add(new Turret(x, y, z));
     	

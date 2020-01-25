@@ -19,7 +19,7 @@ public class PredictiveCollisionAvoidanceManager {
     
     public void execute() {
 		double accumulatedPrintingTime = 0.0;
-		double printingTimeLimit = 0.1; //s
+		double printingTimeLimit = 0.05; //s
     	
 //    	List<Particle> prevParticles = initPrevParticles(grid.getParticles());
 //    	List<Particle> predictedParticles = new ArrayList<>(prevParticles.size());
