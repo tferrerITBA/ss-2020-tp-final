@@ -1,6 +1,7 @@
 package ar.edu.itba.ss.tpf;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PredictiveCollisionAvoidanceManager {
@@ -46,7 +47,11 @@ public class PredictiveCollisionAvoidanceManager {
 
 	private void moveRebelShip() {
     	Particle rebelShip = grid.getRebelShip();
-		rebelShip.setVelocity(rebelShip.getVelocity().getSumVector(getGoalForce(rebelShip, goal).getScalarMultiplication(timeStep)));
+    	Point goalForce = getGoalForce(rebelShip, goal);
+    	Point evasiveForce = getAverageEvasiveForce();
+    	Point totalForce = goalForce.getSumVector(evasiveForce);
+    	
+		rebelShip.setVelocity(rebelShip.getVelocity().getSumVector(totalForce.getScalarMultiplication(timeStep)));
 		rebelShip.setPosition(rebelShip.getPosition().getSumVector(rebelShip.getVelocity().getScalarMultiplication(timeStep)));
     }
     
@@ -74,6 +79,126 @@ public class PredictiveCollisionAvoidanceManager {
     	Point goalUnitVector = goal.getDirectionUnitVector(particle.getPosition());
     	return goalUnitVector.getScalarMultiplication(Configuration.DESIRED_VEL)
     			.getDiffVector(particle.getVelocity()).getScalarDivision(Configuration.TAU);
+    }
+    
+    private Point getAverageEvasiveForce() {
+    	Point accumulatedEvasiveForce = new Point(0, 0, 0);
+    	int processedCollisions = 0;
+    	Particle rebelShip = grid.getRebelShip();
+    	Point desiredVelocity = rebelShip.getVelocity().getSumVector(getGoalForce(rebelShip, goal));
+
+    	List<Collision> collisions = predictCollisions();
+		for(Collision collision : collisions) {
+			/* Collisions may now not occur due to evasive action in others */
+			Collision reprocessedCollision = predictCollision(collision.getParticle(), desiredVelocity);
+			if(reprocessedCollision != null) {
+				Point evasiveForce = getEvasiveForce(grid.getRebelShip(), collision.getParticle(), 
+						reprocessedCollision.getTime(), desiredVelocity);
+				desiredVelocity = desiredVelocity.getSumVector(evasiveForce).getScalarMultiplication(timeStep);
+				accumulatedEvasiveForce = accumulatedEvasiveForce.getSumVector(evasiveForce);
+				processedCollisions++;
+			}
+		}
+		
+		if(processedCollisions == 0) {
+			return accumulatedEvasiveForce;
+		}
+		return accumulatedEvasiveForce.getScalarDivision(processedCollisions);
+	}
+    
+    private List<Collision> predictCollisions() {
+    	List<Collision> collisions = new ArrayList<>();
+    	Particle rebelShip = grid.getRebelShip();
+    	Point desiredVelocity = rebelShip.getVelocity().getSumVector(getGoalForce(rebelShip, goal).getScalarMultiplication(timeStep));
+    	
+    	for(Projectile projectile : grid.getProjectiles()) {
+    		Collision collision = predictCollision(projectile, desiredVelocity);
+    		if(collision != null) {
+    			collisions.add(collision);
+    		}
+    	}
+    	Collections.sort(collisions);
+    	
+    	if(collisions.size() > Configuration.PROJECTILE_AWARENESS_COUNT) {
+    		return collisions.subList(0, Configuration.PROJECTILE_AWARENESS_COUNT);
+    	}
+    	return collisions;
+    }
+    
+    private Collision predictCollision(Particle projectile, Point desiredVelocity) {
+    	Point rebelPos = grid.getRebelShip().getPosition();
+    	Point vel = desiredVelocity.getDiffVector(projectile.getVelocity());
+		Point otherPos = projectile.getPosition();
+		
+		double a = Math.pow(vel.getNorm(), 2);
+		double b = 2 * vel.getDotProduct(rebelPos.getDiffVector(otherPos));
+		double c = Math.pow(rebelPos.getDiffVector(otherPos).getNorm(), 2) 
+				- Math.pow(Configuration.REBEL_SHIP_PERSONAL_SPACE + projectile.getRadius(), 2);
+		
+		double det = b*b - 4*a*c;
+		/* Collision may take place */
+		if(Double.compare(det, 0) > 0) {
+			double t1 = (-b + Math.sqrt(det)) / (2*a);
+			double t2 = (-b - Math.sqrt(det)) / (2*a);
+			if((t1 < 0 && t2 > 0) || (t2 < 0 && t1 > 0)) {
+				return new Collision(projectile, 0);
+			} else if(Double.compare(t1, 0) >= 0 && Double.compare(t2, 0) >= 0) {
+				return new Collision(projectile, Math.min(t1, t2));
+			}
+		}
+		return null;
+	}
+
+	private Point getEvasiveForce(Particle particle, Particle other, double collisionTime, Point desiredVelocity) {
+    	Point c_i = particle.getPosition().getSumVector(desiredVelocity.getScalarMultiplication(collisionTime));
+    	Point c_j = other.getPosition().getSumVector(other.getVelocity().getScalarMultiplication(collisionTime));
+    	Point forceDirection = c_i.getDiffVector(c_j).normalize();
+    	
+    	double D = c_i.getDiffVector(particle.getPosition()).getNorm() + c_i.getDiffVector(c_j).getNorm() 
+    			- particle.getRadius() - other.getRadius();
+    	double d_min = 0.5;
+    	double d_mid = 1;
+        double d_max = 2;
+        double forceMagnitude = 0;
+        double multiplier = 4;
+        if(D < d_min) {
+        	forceMagnitude = 1/D * multiplier;
+        } else if(D < d_mid) {
+        	forceMagnitude = 1/d_min * multiplier;
+        } else if(D < d_max) {
+        	forceMagnitude = (D - d_max) / (d_min * (d_mid - d_max)) * multiplier;
+        }
+        return forceDirection.getScalarMultiplication(forceMagnitude);
+    }
+    
+	
+	
+    private class Collision implements Comparable<Collision> {
+    	private Particle particle;
+    	private double time;
+    	
+    	public Collision(Particle particle, double time) {
+    		this.particle = particle;
+    		this.time = time;
+    	}
+    	
+    	public Particle getParticle() {
+			return particle;
+		}
+
+		public double getTime() {
+			return time;
+		}
+
+		@Override
+		public int compareTo(Collision o) {
+			return Double.compare(time, o.time);
+		}
+		
+		@Override
+		public String toString() {
+			return particle + " " + time;
+		}
     }
     
 //    private List<Particle> updateParticles(final List<Particle> prevParticles, final List<Particle> predictedParticles) {

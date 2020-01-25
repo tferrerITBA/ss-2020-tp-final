@@ -6,4 +6,9 @@ public class Projectile extends Particle {
 		super(Configuration.TURRET_PROJECTILE_RADIUS, x, y, z, vx, vy, vz);
 	}
 
+	@Override
+	public String toString() {
+		return "Projectile [getId()=" + getId() + ", getPosition()=" + getPosition() + "]";
+	}
+
 }

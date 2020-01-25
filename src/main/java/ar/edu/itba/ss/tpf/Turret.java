@@ -4,6 +4,7 @@ import java.util.List;
 
 public class Turret extends Particle {
 	private double lastTimeSinceFired;
+	private static final double EPSILON = Math.pow(10, -10);
 	
 	public Turret(double x, double y, double z) {
 		super(Configuration.TURRET_RADIUS, x, y, z);
@@ -20,22 +21,13 @@ public class Turret extends Particle {
 			Point diffProjectilePosition = initPosition
 					.getSumVector(targetVector.getScalarMultiplication(deltaPosition)).getDiffVector(initPosition);
 			Point projectileVelocity = targetVector.getScalarMultiplication(Configuration.TURRET_PROJECTILE_SPEED);
-			for(int i = 0; i < 9; i++) {
+			for(int i = 0; i < Configuration.PROJECTILE_PARTICLE_COUNT; i++) {
 				Point newPosition = initPosition.getSumVector(diffProjectilePosition.getScalarMultiplication(i));
 				Projectile projectile = new Projectile(newPosition.getX(), newPosition.getY(), newPosition.getZ(),
 						projectileVelocity.getX(), projectileVelocity.getY(), projectileVelocity.getZ());
 				particles.add(projectile);
 				projectiles.add(projectile);
 			}
-			/*particles.add(new Particle(0.5, 1, 1, 1));
-			particles.add(new Particle(0.5, 1.25, 1, 1));
-			particles.add(new Particle(0.5, 1.5, 1, 1));
-			particles.add(new Particle(0.5, 1.75, 1, 1));
-			particles.add(new Particle(0.5, 2, 1, 1));
-			particles.add(new Particle(0.5, 2.25, 1, 1));
-			particles.add(new Particle(0.5, 2.5, 1, 1));
-			particles.add(new Particle(0.5, 2.75, 1, 1));
-			particles.add(new Particle(0.5, 3, 1, 1));*/
 		} else {
 			lastTimeSinceFired += timeStep;
 		}
@@ -54,11 +46,16 @@ public class Turret extends Particle {
 			closestPoint = rebelShip.getPosition().getSumVector(shipToTurret.getScalarMultiplication(normDistFromShip));
 		}
 		Point closestPointDiff = deathStar.getPosition().getDiffVector(closestPoint);
-		
-		return Double.compare(closestPointDiff.getNorm(), deathStar.getRadius()) >= 0;
+
+		return Math.abs(closestPointDiff.getNorm() - deathStar.getRadius()) >= EPSILON;
 	}
 
 	public double getLastTimeSinceFired() {
 		return lastTimeSinceFired;
+	}
+
+	@Override
+	public String toString() {
+		return "Turret [id=" + this.getId() + ", lastTimeSinceFired=" + lastTimeSinceFired + "]";
 	}
 }

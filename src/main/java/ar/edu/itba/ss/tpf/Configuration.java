@@ -16,9 +16,10 @@ public class Configuration {
 	public static final double HEIGHT = 50.0; // m
 	public static final double DEPTH = 100.0; // m
 	
-	public static final double REBEL_SHIP_RADIUS = 2.0; // m
+	public static final double REBEL_SHIP_RADIUS = 1.5; // m
 	public static final double REBEL_SHIP_MASS = 1.0; // m CAMBIAR
 	public static final Point REBEL_SHIP_INIT_POSITION = new Point(WIDTH / 8, HEIGHT / 2, DEPTH / 2);
+	public static final double REBEL_SHIP_PERSONAL_SPACE = 3.0; // m
 	
 	public static final double DEATH_STAR_RADIUS = 20.0; // m
 	public static final double DEATH_STAR_MASS = 10.0; // m CAMBIAR
@@ -27,12 +28,15 @@ public class Configuration {
 	private static List<Turret> turrets = new ArrayList<Turret>();
 	public static final double TURRET_RADIUS = 0.5; // m
 	public static final double TURRET_FIRE_RATE = 1; // s
+	public static final int PROJECTILE_PARTICLE_COUNT = 9;
 	public static final double TURRET_PROJECTILE_RADIUS = 0.5; // m
-	public static final double TURRET_PROJECTILE_SPEED = 50; // m/s
+	public static final double TURRET_PROJECTILE_SPEED = 40; // m/s
 	public static final int TURRET_COUNT = 8;
 	
-	public static final double TIME_STEP = 0.1;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
-	public static final double DESIRED_VEL = 1; // m/s
+	public static final int PROJECTILE_AWARENESS_COUNT = 30;
+	
+	public static final double TIME_STEP = 0.01;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
+	public static final double DESIRED_VEL = 7.5; // m/s
 	public static final double TAU = 0.5; // s
 	
 	private static double timeLimit;
@@ -175,10 +179,14 @@ public class Configuration {
     		return;
     	}
     	
+    	createTurretLayer(DEATH_STAR_POSITION.getX() - DEATH_STAR_RADIUS, DEATH_STAR_POSITION.getY(), DEATH_STAR_POSITION.getZ());
+    	createTurretLayer(DEATH_STAR_POSITION.getX() - 0.866 * DEATH_STAR_RADIUS, DEATH_STAR_POSITION.getY() + DEATH_STAR_RADIUS / 2, DEATH_STAR_POSITION.getZ());
+    	
+    	return;
+	}
+    
+    private static void createTurretLayer(double x, double y, double z) {
     	/* Turrets are evenly spaced */
-    	double x = DEATH_STAR_POSITION.getX() - DEATH_STAR_RADIUS;
-    	double y = DEATH_STAR_POSITION.getY();
-    	double z = DEATH_STAR_POSITION.getZ();
     	turrets.add(new Turret(x, y, z));
     	
     	Point diffVector = (new Point(x, y, z)).getDiffVector(DEATH_STAR_POSITION);
@@ -194,9 +202,7 @@ public class Configuration {
     		Point newTurretPosition = DEATH_STAR_POSITION.getSumVector(diffVector);
     		turrets.add(new Turret(newTurretPosition.getX(), newTurretPosition.getY(), newTurretPosition.getZ()));
     	}
-    	
-    	return;
-	}
+    }
 
 //	public static boolean validateParticlePosition(final List<Particle> particles,
 //												   final double randomPositionX,
