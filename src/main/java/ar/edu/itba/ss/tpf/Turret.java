@@ -23,7 +23,7 @@ public class Turret extends Particle {
 			Point projectileVelocity = targetVector.getScalarMultiplication(Configuration.TURRET_PROJECTILE_SPEED);
 			for(int i = 0; i < Configuration.PROJECTILE_PARTICLE_COUNT; i++) {
 				Point newPosition = initPosition.getSumVector(diffProjectilePosition.getScalarMultiplication(i));
-				Projectile projectile = new Projectile(newPosition.getX(), newPosition.getY(), newPosition.getZ(),
+				Projectile projectile = new Projectile(this, newPosition.getX(), newPosition.getY(), newPosition.getZ(),
 						projectileVelocity.getX(), projectileVelocity.getY(), projectileVelocity.getZ());
 				particles.add(projectile);
 				projectiles.add(projectile);

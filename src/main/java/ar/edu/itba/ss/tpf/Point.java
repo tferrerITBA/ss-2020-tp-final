@@ -11,6 +11,12 @@ public class Point {
 		this.z = z;
 	}
 	
+	public Point() {
+		this.x = 0;
+		this.y = 0;
+		this.z = 0;
+	}
+
 	public Point normalize() {
 		return this.getScalarDivision(this.getNorm());
 	}

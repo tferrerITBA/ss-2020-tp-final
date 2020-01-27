@@ -27,32 +27,51 @@ public class PredictiveCollisionAvoidanceManager {
 //    	
 		while(Double.compare(accumulatedTime, Configuration.getTimeLimit()) <= 0) {
 			if (accumulatedPrintingTime >= printingTimeLimit) {
-				deleteOutOfBoundsProjectiles();
 				Configuration.writeOvitoOutputFile(accumulatedTime, grid.getParticles());
 				accumulatedPrintingTime = 0;
 			}
 			accumulatedTime += timeStep;
 			accumulatedPrintingTime += timeStep;
 			
+			deleteOutOfBoundsProjectiles();
+			
 			for(int i = 0; i < grid.getTurrets().size(); i++) {
 				Turret turret = grid.getTurrets().get(i);
 				turret.fire(timeStep, grid.getRebelShip(), grid.getDeathStar(), grid.getParticles(), grid.getProjectiles());
 			}
+			for(int i = 0; i < grid.getDrones().size(); i++) {
+				Drone drone = grid.getDrones().get(i);
+				drone.fire(timeStep, grid);
+			}
 			
 			//grid.setParticles(updateParticles(prevParticles, predictedParticles));
-			moveRebelShip();
 			moveProjectiles();
+			moveRebelShip();
+			moveDrones();
 		}
 	}
 
 	private void moveRebelShip() {
     	Particle rebelShip = grid.getRebelShip();
-    	Point goalForce = getGoalForce(rebelShip, goal);
-    	Point evasiveForce = getAverageEvasiveForce();
-    	Point totalForce = goalForce.getSumVector(evasiveForce);
+    	Point goalForce = getGoalForce(rebelShip, goal, Configuration.DESIRED_VEL);
+    	Point wallForce = getWallForce(rebelShip);
+    	Point evasiveForce = getAverageEvasiveForce(rebelShip, goal, Configuration.DESIRED_VEL);
+    	Point totalForce = goalForce.getSumVector(wallForce).getSumVector(evasiveForce);
     	
 		rebelShip.setVelocity(rebelShip.getVelocity().getSumVector(totalForce.getScalarMultiplication(timeStep)));
 		rebelShip.setPosition(rebelShip.getPosition().getSumVector(rebelShip.getVelocity().getScalarMultiplication(timeStep)));
+    }
+	
+	private void moveDrones() {
+    	Particle rebelShip = grid.getRebelShip();
+    	for(Drone drone : grid.getDrones()) {
+    		Point goalForce = getGoalForce(drone, rebelShip.getPosition(), Configuration.DRONE_DESIRED_VEL);
+        	Point evasiveForce = getAverageEvasiveForce(drone, rebelShip.getPosition(), Configuration.DRONE_DESIRED_VEL);
+        	Point totalForce = goalForce.getSumVector(evasiveForce);
+        	
+        	drone.setVelocity(drone.getVelocity().getSumVector(totalForce.getScalarMultiplication(timeStep)));
+    		drone.setPosition(drone.getPosition().getSumVector(drone.getVelocity().getScalarMultiplication(timeStep)));
+    	}
     }
     
     private void moveProjectiles() {
@@ -70,29 +89,77 @@ public class PredictiveCollisionAvoidanceManager {
     		if(pos.getX() < 0 || pos.getY() < 0 || pos.getZ() < 0 || pos.getX() > Configuration.WIDTH
     				|| pos.getY() > Configuration.HEIGHT || pos.getZ() > Configuration.DEPTH) {
     			toDelete.add(p);
+    			p.getShooter().getProjectiles().remove(p);
     		}
     	}
     	grid.getParticles().removeAll(toDelete);
+    	
 	}
     
-    private Point getGoalForce(Particle particle, Point goal) {
+    private Point getGoalForce(Particle particle, Point goal, double desiredSpeed) {
     	Point goalUnitVector = goal.getDirectionUnitVector(particle.getPosition());
-    	return goalUnitVector.getScalarMultiplication(Configuration.DESIRED_VEL)
+//    	if(particle.equals(grid.getRebelShip())) {
+//    		goalUnitVector = goalUnitVector.getScalarMultiplication(2);
+//    	}
+    	return goalUnitVector.getScalarMultiplication(desiredSpeed)
     			.getDiffVector(particle.getVelocity()).getScalarDivision(Configuration.TAU);
     }
     
-    private Point getAverageEvasiveForce() {
+    private Point getWallForce(Particle particle) {
+    	Point wallForce = new Point();
+    	Point normalUnitVector;
+    	double wallForceMagnitude;
+    	
+    	/* Height walls */
+    	normalUnitVector = new Point(0, 1, 0);
+    	wallForceMagnitude = getWallForceMagnitude(particle.getRadius(), particle.getPosition().getY());
+    	wallForce = wallForce.getSumVector(normalUnitVector.getScalarMultiplication(wallForceMagnitude));
+    	
+    	normalUnitVector = new Point(0, -1, 0);
+    	wallForceMagnitude = getWallForceMagnitude(particle.getRadius(), Configuration.HEIGHT - particle.getPosition().getY());
+    	wallForce = wallForce.getSumVector(normalUnitVector.getScalarMultiplication(wallForceMagnitude));
+    	
+    	/* Width walls */
+    	normalUnitVector = new Point(0, 0, 1);
+    	wallForceMagnitude = getWallForceMagnitude(particle.getRadius(), particle.getPosition().getZ());
+    	wallForce = wallForce.getSumVector(normalUnitVector.getScalarMultiplication(wallForceMagnitude));
+    	
+    	normalUnitVector = new Point(0, 0, -1);
+    	wallForceMagnitude = getWallForceMagnitude(particle.getRadius(), Configuration.DEPTH - particle.getPosition().getZ());
+    	wallForce = wallForce.getSumVector(normalUnitVector.getScalarMultiplication(wallForceMagnitude));
+    	
+    	/* Depth walls */
+    	normalUnitVector = new Point(1, 0, 0);
+    	wallForceMagnitude = getWallForceMagnitude(particle.getRadius(), particle.getPosition().getX());
+    	wallForce = wallForce.getSumVector(normalUnitVector.getScalarMultiplication(wallForceMagnitude));
+    	
+    	normalUnitVector = new Point(-1, 0, 0);
+    	wallForceMagnitude = getWallForceMagnitude(particle.getRadius(), Configuration.WIDTH - particle.getPosition().getX());
+    	wallForce = wallForce.getSumVector(normalUnitVector.getScalarMultiplication(wallForceMagnitude));
+    	
+    	/* Death Star */
+    	
+    	return wallForce;
+    }
+    
+    private double getWallForceMagnitude(double radius, double distance) {
+    	if(Double.compare(distance - radius, Configuration.WALL_SAFE_DISTANCE) >= 0)
+    		return 0;
+		return (Configuration.WALL_SAFE_DISTANCE + radius - distance) / Math.pow(distance - radius, Configuration.K_CONSTANT);
+	}
+
+	private Point getAverageEvasiveForce(Particle particle, Point goal, double desiredSpeed) {
     	Point accumulatedEvasiveForce = new Point(0, 0, 0);
     	int processedCollisions = 0;
-    	Particle rebelShip = grid.getRebelShip();
-    	Point desiredVelocity = rebelShip.getVelocity().getSumVector(getGoalForce(rebelShip, goal));
+    	Point desiredVelocity = particle.getVelocity().getSumVector(getGoalForce(particle, goal, desiredSpeed)
+    			.getSumVector(getWallForce(particle)).getScalarMultiplication(timeStep));
 
-    	List<Collision> collisions = predictCollisions();
+    	List<Collision> collisions = predictCollisions(particle, goal, desiredSpeed);
 		for(Collision collision : collisions) {
 			/* Collisions may now not occur due to evasive action in others */
-			Collision reprocessedCollision = predictCollision(collision.getParticle(), desiredVelocity);
+			Collision reprocessedCollision = predictCollision(particle, collision.getParticle(), desiredVelocity);
 			if(reprocessedCollision != null) {
-				Point evasiveForce = getEvasiveForce(grid.getRebelShip(), collision.getParticle(), 
+				Point evasiveForce = getEvasiveForce(particle, collision.getParticle(), 
 						reprocessedCollision.getTime(), desiredVelocity);
 				desiredVelocity = desiredVelocity.getSumVector(evasiveForce).getScalarMultiplication(timeStep);
 				accumulatedEvasiveForce = accumulatedEvasiveForce.getSumVector(evasiveForce);
@@ -106,47 +173,85 @@ public class PredictiveCollisionAvoidanceManager {
 		return accumulatedEvasiveForce.getScalarDivision(processedCollisions);
 	}
     
-    private List<Collision> predictCollisions() {
+    private List<Collision> predictCollisions(Particle particle, Point goal, double desiredSpeed) {
     	List<Collision> collisions = new ArrayList<>();
-    	Particle rebelShip = grid.getRebelShip();
-    	Point desiredVelocity = rebelShip.getVelocity().getSumVector(getGoalForce(rebelShip, goal).getScalarMultiplication(timeStep));
+    	Point desiredVelocity = particle.getVelocity().getSumVector(getGoalForce(particle, goal, desiredSpeed).getSumVector(getWallForce(particle)).getScalarMultiplication(timeStep));
     	
     	for(Projectile projectile : grid.getProjectiles()) {
-    		Collision collision = predictCollision(projectile, desiredVelocity);
+    		if(!particle.getProjectiles().contains(projectile)) {
+    			Collision collision = predictCollision(particle, projectile, desiredVelocity);
+        		if(collision != null) {
+        			collisions.add(collision);
+        		}
+    		}
+    	}
+    	for(Drone drone : grid.getDrones()) {
+    		if(!particle.equals(drone)) {
+    			Collision collision = predictCollision(particle, drone, desiredVelocity);
+        		if(collision != null) {
+        			collisions.add(collision);
+        		}
+    		}
+    	}
+    	if(!particle.equals(grid.getRebelShip())) {
+    		/* Must be a drone */
+    		Collision collision = predictCollision(particle, grid.getRebelShip(), desiredVelocity);
     		if(collision != null) {
     			collisions.add(collision);
     		}
     	}
-    	Collections.sort(collisions);
     	
+    	Collections.sort(collisions);
     	if(collisions.size() > Configuration.PROJECTILE_AWARENESS_COUNT) {
     		return collisions.subList(0, Configuration.PROJECTILE_AWARENESS_COUNT);
     	}
     	return collisions;
     }
-    
-    private Collision predictCollision(Particle projectile, Point desiredVelocity) {
-    	Point rebelPos = grid.getRebelShip().getPosition();
-    	Point vel = desiredVelocity.getDiffVector(projectile.getVelocity());
-		Point otherPos = projectile.getPosition();
+
+	private Collision predictCollision(Particle particle, Particle other, Point desiredVelocity) {
+    	Point particlePos = particle.getPosition();
+    	Point vel = desiredVelocity.getDiffVector(other.getVelocity());
+		Point otherPos = other.getPosition();
+		double personalSpace = getPersonalSpace(particle, other);
 		
 		double a = Math.pow(vel.getNorm(), 2);
-		double b = 2 * vel.getDotProduct(rebelPos.getDiffVector(otherPos));
-		double c = Math.pow(rebelPos.getDiffVector(otherPos).getNorm(), 2) 
-				- Math.pow(Configuration.REBEL_SHIP_PERSONAL_SPACE + projectile.getRadius(), 2);
+		double b = 2 * vel.getDotProduct(particlePos.getDiffVector(otherPos));
+		double c = Math.pow(particlePos.getDiffVector(otherPos).getNorm(), 2) 
+				- Math.pow(personalSpace + other.getRadius(), 2);
 		
 		double det = b*b - 4*a*c;
+		//System.out.println(particle.getId() + " " + other.getId() + " " + det);
 		/* Collision may take place */
 		if(Double.compare(det, 0) > 0) {
 			double t1 = (-b + Math.sqrt(det)) / (2*a);
 			double t2 = (-b - Math.sqrt(det)) / (2*a);
+			//System.out.println(t1 + " " + t2);
 			if((t1 < 0 && t2 > 0) || (t2 < 0 && t1 > 0)) {
-				return new Collision(projectile, 0);
+				return new Collision(other, 0);
 			} else if(Double.compare(t1, 0) >= 0 && Double.compare(t2, 0) >= 0) {
-				return new Collision(projectile, Math.min(t1, t2));
+				return new Collision(other, Math.min(t1, t2));
 			}
 		}
 		return null;
+	}
+	
+	private double getPersonalSpace(Particle particle, Particle other) {
+    	if(other.getClass() == Projectile.class) {
+    		return Configuration.ENTITY_TO_PROJECTILE_PERSONAL_SPACE;
+    	}
+    	
+    	/* Other is an entity */
+    	if(particle.getClass() == Drone.class) {
+    		/* Particle is drone */
+			if(other.getClass() == Drone.class) {
+				return Configuration.DRONE_TO_DRONE_PERSONAL_SPACE;
+			} else {
+				return Configuration.DRONE_TO_REBEL_SHIP_PERSONAL_SPACE;
+			}
+		} else {
+			/* Particle is rebel ship => Other is drone */
+			return Configuration.REBEL_SHIP_TO_DRONE_PERSONAL_SPACE;
+		}
 	}
 
 	private Point getEvasiveForce(Particle particle, Particle other, double collisionTime, Point desiredVelocity) {
@@ -155,12 +260,12 @@ public class PredictiveCollisionAvoidanceManager {
     	Point forceDirection = c_i.getDiffVector(c_j).normalize();
     	
     	double D = c_i.getDiffVector(particle.getPosition()).getNorm() + c_i.getDiffVector(c_j).getNorm() 
-    			- particle.getRadius() - other.getRadius();
+    			- getPersonalSpace(particle, other) - other.getRadius();
     	double d_min = 0.5;
     	double d_mid = 1;
         double d_max = 2;
         double forceMagnitude = 0;
-        double multiplier = 4;
+        double multiplier = 5;
         if(D < d_min) {
         	forceMagnitude = 1/D * multiplier;
         } else if(D < d_mid) {
@@ -293,71 +398,6 @@ public class PredictiveCollisionAvoidanceManager {
 //		return new Point2D.Double(drivingForceX, drivingForceY);
 //	}
 //
-//	private Point2D.Double getSocialForce(final Particle particle) {
-//		double resultantForceX = 0;
-//		double resultantForceY = 0;
-//		
-//		for(Particle other : grid.getParticles()) {
-//			if(!particle.equals(other)) {
-//				double normalUnitVectorX = (other.getPosition().getX() - particle.getPosition().getX())
-//						/ Math.abs(other.getRadius() - particle.getRadius());
-//	        	double normalUnitVectorY = (other.getPosition().getY() - particle.getPosition().getY())
-//	        			/ Math.abs(other.getRadius() - particle.getRadius());
-//	        	double norm = Math.sqrt(Math.pow(normalUnitVectorX, 2) + Math.pow(normalUnitVectorY, 2));
-//	        	normalUnitVectorX /= norm;
-//	        	normalUnitVectorY /= norm;
-//	        	Point2D.Double normalUnitVector = new Point2D.Double(normalUnitVectorX, normalUnitVectorY);
-//	        	
-//	        	double overlap = particle.getCenterToCenterDistance(other) - (particle.getRadius() + other.getRadius());
-//		        	
-//				double normalForce = - Configuration.A_CONSTANT * Math.exp(- overlap / Configuration.B_CONSTANT);
-//	        	
-//				resultantForceX += normalForce * normalUnitVector.getX();
-//				resultantForceY += normalForce * normalUnitVector.getY();
-//			}
-//		}
-//		return new Point2D.Double(resultantForceX, resultantForceY);
-//	}
-//
-//	private Point2D.Double getGranularForce(final Particle particle) {
-//		Point2D.Double wallCollisionForce = getWallCollisionForce(particle);
-//		Point2D.Double particleCollisionForce = getParticleCollisionForce(particle);
-//		
-//		return new Point2D.Double(wallCollisionForce.getX() + particleCollisionForce.getX(), 
-//				wallCollisionForce.getY() + particleCollisionForce.getY());
-//	}
-//
-//	private Point2D.Double getParticleCollisionForce(final Particle particle) {
-//		double resultantForceX = 0;
-//		double resultantForceY = 0;
-//		
-//		for(Particle other : grid.getParticles()) {
-//			if(!particle.equals(other)) {
-//				double normalUnitVectorX = (other.getPosition().getX() - particle.getPosition().getX())
-//						/ Math.abs(other.getRadius() - particle.getRadius());
-//	        	double normalUnitVectorY = (other.getPosition().getY() - particle.getPosition().getY())
-//	        			/ Math.abs(other.getRadius() - particle.getRadius());
-//	        	double norm = Math.sqrt(Math.pow(normalUnitVectorX, 2) + Math.pow(normalUnitVectorY, 2));
-//	        	normalUnitVectorX /= norm;
-//	        	normalUnitVectorY /= norm;
-//	        	Point2D.Double normalUnitVector = new Point2D.Double(normalUnitVectorX, normalUnitVectorY);
-//	        	Point2D.Double tangentUnitVector = new Point2D.Double(- normalUnitVectorY, normalUnitVectorX);
-//	        	
-//	        	double overlap = particle.getRadius() + other.getRadius() - particle.getCenterToCenterDistance(other);
-//	        	if(overlap >= 0) {
-//	        		Point2D.Double relativeVelocity = particle.getRelativeVelocity(other);
-//		        	
-//					double normalForce = - Configuration.K_NORM * overlap;
-//		        	double tangentForce = - Configuration.K_TANG * overlap * (relativeVelocity.getX() * tangentUnitVector.getX()
-//							+ relativeVelocity.getY() * tangentUnitVector.getY());
-//		        	
-//					resultantForceX += normalForce * normalUnitVector.getX() + tangentForce * tangentUnitVector.getX();
-//					resultantForceY += normalForce * normalUnitVector.getY() + tangentForce * tangentUnitVector.getY();
-//	        	}
-//			}
-//        }
-//		return new Point2D.Double(resultantForceX, resultantForceY);
-//	}
 //
 //	private Point2D.Double getWallCollisionForce(final Particle particle) {
 //		double normalForce = 0;

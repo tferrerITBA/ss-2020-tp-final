@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Configuration {
@@ -13,41 +14,52 @@ public class Configuration {
 	private static String INPUT_FILE_NAME = "config.txt";
 	private static String OUTPUT_FILE_NAME = "ovito_output.xyz";
 	public static final double WIDTH = 200.0; // m
-	public static final double HEIGHT = 75.0; // m
+	public static final double HEIGHT = 100.0; // m
 	public static final double DEPTH = 100.0; // m
 	
 	public static final double REBEL_SHIP_RADIUS = 1.5; // m
-	public static final double REBEL_SHIP_MASS = 1.0; // m CAMBIAR
+	//public static final double REBEL_SHIP_MASS = 1.0; // m CAMBIAR
 	public static final Point REBEL_SHIP_INIT_POSITION = new Point(WIDTH / 8, HEIGHT / 2, DEPTH / 2);
-	public static final double REBEL_SHIP_PERSONAL_SPACE = 3.0; // m
 	
 	public static final double DEATH_STAR_RADIUS = 20.0; // m
-	public static final double DEATH_STAR_MASS = 10.0; // m CAMBIAR
+	//public static final double DEATH_STAR_MASS = 10.0; // m CAMBIAR
 	public static Point DEATH_STAR_POSITION = new Point(WIDTH - DEATH_STAR_RADIUS - (DEPTH - 2 * DEATH_STAR_RADIUS) / 2, HEIGHT / 2, DEPTH / 2);
 	
 	private static List<Turret> turrets = new ArrayList<Turret>();
 	public static final double TURRET_RADIUS = 0.5; // m
 	public static final double TURRET_FIRE_RATE = 2; // s
 	public static final int PROJECTILE_PARTICLE_COUNT = 3;
-	public static final double TURRET_PROJECTILE_RADIUS = 0.5; // m
-	public static final double TURRET_PROJECTILE_SPEED = 40; // m/s
-	public static final int TURRET_COUNT = 8;
+	public static final double TURRET_PROJECTILE_RADIUS = 0.3; // m
+	public static final double TURRET_PROJECTILE_SPEED = 30; // m/s
+	public static final int TURRET_COUNT = 5;
+	
+	private static List<Drone> drones = new ArrayList<Drone>();
+	public static final double DRONE_RADIUS = 1.0; // m
+	public static final double DRONE_DESIRED_VEL = 5.0;
+	public static final int DRONE_COUNT = 5;
 	
 	public static final int PROJECTILE_AWARENESS_COUNT = 30;
 	
-	public static final double TIME_STEP = 0.01;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
-	public static final double DESIRED_VEL = 7.5; // m/s
+	public static final double ENTITY_TO_PROJECTILE_PERSONAL_SPACE = 2.0;
+	public static final double DRONE_TO_DRONE_PERSONAL_SPACE = 3;
+	public static final double DRONE_TO_REBEL_SHIP_PERSONAL_SPACE = 15.0;
+	public static final double REBEL_SHIP_TO_DRONE_PERSONAL_SPACE = 15.0;
+	public static final double WALL_SAFE_DISTANCE = 10.0;
+	public static final int K_CONSTANT = 1;
+	
+	public static final double TIME_STEP = 0.0001;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
+	public static final double DESIRED_VEL = 5.0; // m/s
 	public static final double TAU = 0.5; // s
 	
 	private static double timeLimit;
 	private static String fileName = "";
 	///////
-	public static final double A_CONSTANT = 2000; // N
-	public static final double B_CONSTANT = 0.08; // m
-	public static final double MIN_PARTICLE_RADIUS = 0.25; // m
-	public static final double MAX_PARTICLE_RADIUS = 0.35; // m
-	public static final double K_NORM = 1.2e5; // kg/s^2
-	public static final double K_TANG = 2 * K_NORM; // kg/(m s)
+//	public static final double A_CONSTANT = 2000; // N
+//	public static final double B_CONSTANT = 0.08; // m
+//	public static final double MIN_PARTICLE_RADIUS = 0.25; // m
+//	public static final double MAX_PARTICLE_RADIUS = 0.35; // m
+//	public static final double K_NORM = 1.2e5; // kg/s^2
+//	public static final double K_TANG = 2 * K_NORM; // kg/(m s)
 	//public static final double PARTICLE_MASS = 80; // kg
 	//private static double timeStep = 0.1 * Math.sqrt(PARTICLE_MASS / K_NORM);
 //	private static final int INVALID_POSITION_LIMIT = 500;
@@ -146,30 +158,24 @@ public class Configuration {
 	/* Time (0) */
     private static List<Particle> generateParticles() {
         List<Particle> particles = new ArrayList<>();
-
-//		Random r = new Random();
 		
 		particles.add(createRebelShip());
 		particles.add(createDeathStar());
 		createTurrets();
 		particles.addAll(turrets);
-		
-//		for(int i = 0; i < particleCount; i++) {
-//			double radius = r.nextDouble() * (MAX_PARTICLE_RADIUS - MIN_PARTICLE_RADIUS) + MIN_PARTICLE_RADIUS;
-//			Particle p = new Particle(radius, PARTICLE_MASS, 0, 0, INIT_VEL, INIT_VEL);
-//			particles.add(p);
-//		}
+		createDrones();
+		particles.addAll(drones);
 
 		return particles;
     }
-    
-    private static Particle createRebelShip() {
-    	return new Particle(REBEL_SHIP_RADIUS, REBEL_SHIP_MASS, REBEL_SHIP_INIT_POSITION.getX(), 
+
+	private static Particle createRebelShip() {
+    	return new Particle(REBEL_SHIP_RADIUS, REBEL_SHIP_INIT_POSITION.getX(), 
 				REBEL_SHIP_INIT_POSITION.getY(), REBEL_SHIP_INIT_POSITION.getZ());
 	}
     
     private static Particle createDeathStar() {
-    	return new Particle(DEATH_STAR_RADIUS, DEATH_STAR_MASS, DEATH_STAR_POSITION.getX(), DEATH_STAR_POSITION.getY(),
+    	return new Particle(DEATH_STAR_RADIUS, DEATH_STAR_POSITION.getX(), DEATH_STAR_POSITION.getY(),
     			DEATH_STAR_POSITION.getZ());
 	}
     
@@ -205,25 +211,33 @@ public class Configuration {
     		turrets.add(new Turret(newTurretPosition.getX(), newTurretPosition.getY(), newTurretPosition.getZ()));
     	}
     }
+    
+    private static void createDrones() {
+    	Random r = new Random();
+    	double maxX = DEATH_STAR_POSITION.getX() - DEATH_STAR_RADIUS - DRONE_RADIUS;
+    	double minX = (maxX - REBEL_SHIP_INIT_POSITION.getX()) * 3.0 / 4.0 + REBEL_SHIP_INIT_POSITION.getX();
+		for(int i = 0; i < DRONE_COUNT; i++) {
+			boolean isValidPosition = false;
+			double x = 0, y = 0, z = 0;
+			while(!isValidPosition) {
+				x = r.nextDouble() * (maxX - minX) + minX;
+				y = r.nextDouble() * (HEIGHT - 2 * DRONE_RADIUS) + DRONE_RADIUS;
+				z = r.nextDouble() * (DEPTH - 2 * DRONE_RADIUS) + DRONE_RADIUS;
+				isValidPosition = validateDronePosition(x, y, z);
+			}
+			drones.add(new Drone(x, y, z));
+		}
+	}
 
-//	public static boolean validateParticlePosition(final List<Particle> particles,
-//												   final double randomPositionX,
-//												   final double randomPositionY,
-//												   final double radius) {
-//        if(false) {
-//        	return false;
-//		}
-//    	for(Particle p : particles) {
-//    		if(Double.compare(p.getPosition().getX(), 0) == 0
-//					&& Double.compare(p.getPosition().getY(), 0) == 0) {
-//    			continue;
-//			}
-//            if(Math.sqrt(Math.pow(p.getPosition().getX() - randomPositionX, 2) + Math.pow(p.getPosition().getY() - randomPositionY, 2))
-//                    < (p.getRadius() + radius))
-//                return false;
-//        }
-//        return true;
-//    }
+	public static boolean validateDronePosition(final double x, final double y, final double z) {
+		/* Only drones may overlap initially */
+    	for(Drone drone : drones) {
+            if(Math.sqrt(Math.pow(drone.getPosition().getX() - x, 2) + Math.pow(drone.getPosition().getY() - y, 2)
+            		+ Math.pow(drone.getPosition().getZ() - z, 2)) < 2 * DRONE_RADIUS)
+                return false;
+        }
+        return true;
+    }
 
 	private static void generateOvitoOutputFile() {
 		File outputFile = new File(OUTPUT_FILE_NAME);
@@ -260,6 +274,10 @@ public class Configuration {
 	
 	public static List<Turret> getTurrets() {
 		return turrets;
+	}
+	
+	public static List<Drone> getDrones() {
+		return drones;
 	}
 	
 	public static double getTimeLimit() {

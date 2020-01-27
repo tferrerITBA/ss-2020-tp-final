@@ -10,6 +10,7 @@ public class Grid {
 	private Particle rebelShip;
 	private Particle deathStar;
 	private List<Turret> turrets;
+	private List<Drone> drones;
 	private List<Projectile> projectiles;
 	private final double width;
 	private final double depth;
@@ -20,6 +21,7 @@ public class Grid {
 		this.rebelShip = particles.get(0);
 		this.deathStar = particles.get(1);
 		this.turrets = Configuration.getTurrets();
+		this.drones = Configuration.getDrones();
 		this.projectiles = new ArrayList<>();
 		this.width = Configuration.WIDTH;
 		this.depth = Configuration.DEPTH;
@@ -45,6 +47,10 @@ public class Grid {
 
 	public List<Turret> getTurrets() {
 		return turrets;
+	}
+	
+	public List<Drone> getDrones() {
+		return drones;
 	}
 
 	public List<Projectile> getProjectiles() {
