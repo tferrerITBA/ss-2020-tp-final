@@ -35,11 +35,11 @@ public class PredictiveCollisionAvoidanceManager {
 			
 			deleteOutOfBoundsProjectiles();
 			
-			for(int i = 0; i < grid.getTurrets().size(); i++) {
+			for(int i = 0; i < grid.getTurrets().size(); i++) { // FOR EACH
 				Turret turret = grid.getTurrets().get(i);
 				turret.fire(timeStep, grid.getRebelShip(), grid.getDeathStar(), grid.getParticles(), grid.getProjectiles());
 			}
-			for(int i = 0; i < grid.getDrones().size(); i++) {
+			for(int i = 0; i < grid.getDrones().size(); i++) { // FOR EACH
 				Drone drone = grid.getDrones().get(i);
 				drone.fire(timeStep, grid);
 			}
@@ -76,7 +76,7 @@ public class PredictiveCollisionAvoidanceManager {
     
     private void moveProjectiles() {
     	List<Projectile> projectiles = grid.getProjectiles();
-    	for(Projectile p : projectiles) {
+    	for(Projectile p : projectiles) { // TODO CHECK COLLISIONS
     		p.setPosition(p.getPosition().getSumVector(p.getVelocity().getScalarMultiplication(timeStep)));
     	}
     }
@@ -201,7 +201,7 @@ public class PredictiveCollisionAvoidanceManager {
     		}
     	}
     	
-    	Collections.sort(collisions);
+    	Collections.sort(collisions); // TODO ADD TIME LIMIT
     	if(collisions.size() > Configuration.PROJECTILE_AWARENESS_COUNT) {
     		return collisions.subList(0, Configuration.PROJECTILE_AWARENESS_COUNT);
     	}
