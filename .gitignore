@@ -3,6 +3,8 @@
 .project
 .settings
 bin
+*.iml
+.idea
 
 test-input.txt
 
