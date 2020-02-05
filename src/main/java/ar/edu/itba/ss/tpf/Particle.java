@@ -1,12 +1,10 @@
 package ar.edu.itba.ss.tpf;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class Particle implements Cloneable, Shooter {
+public class Particle implements Cloneable {
 	
 	private static int count = 0;
 	
@@ -163,12 +161,6 @@ public class Particle implements Cloneable, Shooter {
 	
 	public boolean isNeighbor(Particle other) {
 		return neighbors.contains(other);
-	}
-
-	@Override
-	public List<Projectile> getProjectiles() {
-		// TODO Auto-generated method stub
-		return new ArrayList<Projectile>();
 	}
 	
 //	public double getBorderToBorderDistance(final Particle other) {

@@ -27,10 +27,10 @@ public class Configuration {
 	
 	private static List<Turret> turrets = new ArrayList<Turret>();
 	public static final double TURRET_RADIUS = 0.5; // m
-	public static final double TURRET_FIRE_RATE = 2; // s
+	public static final double TURRET_FIRE_RATE = 5; // s
 	public static final int PROJECTILE_PARTICLE_COUNT = 3;
 	public static final double TURRET_PROJECTILE_RADIUS = 0.3; // m
-	public static final double TURRET_PROJECTILE_SPEED = 30; // m/s
+	public static final double TURRET_PROJECTILE_SPEED = 25; // m/s
 	public static final int TURRET_COUNT = 5;
 	
 	private static List<Drone> drones = new ArrayList<Drone>();
@@ -38,6 +38,7 @@ public class Configuration {
 	public static final double DRONE_DESIRED_VEL = 5.0;
 	public static final int DRONE_COUNT = 5;
 	
+	public static final double COLLISION_PREDICTION_TIME_LIMIT = 1.5;
 	public static final int PROJECTILE_AWARENESS_COUNT = 30;
 	
 	public static final double ENTITY_TO_PROJECTILE_PERSONAL_SPACE = 2.0;
@@ -45,7 +46,8 @@ public class Configuration {
 	public static final double DRONE_TO_REBEL_SHIP_PERSONAL_SPACE = 15.0;
 	public static final double REBEL_SHIP_TO_DRONE_PERSONAL_SPACE = 15.0;
 	public static final double WALL_SAFE_DISTANCE = 10.0;
-	public static final int K_CONSTANT = 1;
+	public static final double DEATH_STAR_SAFE_DISTANCE = 1.0;
+	public static final int K_CONSTANT = 2;
 	
 	public static final double TIME_STEP = 0.0001;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
 	public static final double DESIRED_VEL = 5.0; // m/s
@@ -67,12 +69,18 @@ public class Configuration {
 	public static void requestParameters() {
 		Scanner scanner = new Scanner(System.in);
 	    
-	    System.out.println("Enter Time Limit:");
+	    System.out.println("Enter Time Limit [Press Enter for goal limit]:");
     	Double selectedTimeLimit = null;
-	    while(selectedTimeLimit == null || selectedTimeLimit <= 0) {
+    	boolean hasTimeLimitInput = false;
+	    while(!hasTimeLimitInput || (selectedTimeLimit != null && selectedTimeLimit <= 0)) {
 	    	selectedTimeLimit = stringToDouble(scanner.nextLine());
+	    	if(!hasTimeLimitInput)
+	    		hasTimeLimitInput = true;
 	    }
-	    timeLimit = selectedTimeLimit;
+	    if(selectedTimeLimit == null)
+	    	timeLimit = -1;
+	    else
+	    	timeLimit = selectedTimeLimit;
 	    
 	    System.out.println("Enter Filename:");
 	    while(fileName == "") {
@@ -170,12 +178,12 @@ public class Configuration {
     }
 
 	private static Particle createRebelShip() {
-    	return new Particle(REBEL_SHIP_RADIUS, REBEL_SHIP_INIT_POSITION.getX(), 
+    	return new RebelShip(REBEL_SHIP_RADIUS, REBEL_SHIP_INIT_POSITION.getX(), 
 				REBEL_SHIP_INIT_POSITION.getY(), REBEL_SHIP_INIT_POSITION.getZ());
 	}
     
     private static Particle createDeathStar() {
-    	return new Particle(DEATH_STAR_RADIUS, DEATH_STAR_POSITION.getX(), DEATH_STAR_POSITION.getY(),
+    	return new DeathStar(DEATH_STAR_RADIUS, DEATH_STAR_POSITION.getX(), DEATH_STAR_POSITION.getY(),
     			DEATH_STAR_POSITION.getZ());
 	}
     
@@ -282,6 +290,10 @@ public class Configuration {
 	
 	public static double getTimeLimit() {
 		return timeLimit;
+	}
+	
+	public static boolean isGoalTimeLimit() {
+		return Double.compare(timeLimit, -1.0) == 0;
 	}
 
 //	public static double getTimeStep() {

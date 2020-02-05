@@ -42,7 +42,7 @@ public class Drone extends Particle implements Shooter {
 						projectileVelocity.getX(), projectileVelocity.getY(), projectileVelocity.getZ());
 				grid.getParticles().add(projectile);
 				grid.getProjectiles().add(projectile);
-				this.projectiles.add(projectile);
+				projectiles.add(projectile);
 			}
 		} else {
 			lastTimeSinceFired += timeStep;
