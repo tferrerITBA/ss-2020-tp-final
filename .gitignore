@@ -3,3 +3,7 @@
 .project
 .settings
 bin
+
+test-input.txt
+
+test.xyz
