@@ -39,10 +39,10 @@ public class Configuration {
 	public static final int DRONE_COUNT = 5;
 	
 	public static final double COLLISION_PREDICTION_TIME_LIMIT = 1.5;
-	public static final int PROJECTILE_AWARENESS_COUNT = 30;
+	public static final int COLLISION_AWARENESS_COUNT = 30;
 	
 	public static final double ENTITY_TO_PROJECTILE_PERSONAL_SPACE = 2.0;
-	public static final double DRONE_TO_DRONE_PERSONAL_SPACE = 3;
+	public static final double DRONE_TO_DRONE_PERSONAL_SPACE = 1.5;
 	public static final double DRONE_TO_REBEL_SHIP_PERSONAL_SPACE = 15.0;
 	public static final double REBEL_SHIP_TO_DRONE_PERSONAL_SPACE = 15.0;
 	public static final double WALL_SAFE_DISTANCE = 10.0;

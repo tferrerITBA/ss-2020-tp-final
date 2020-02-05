@@ -22,7 +22,7 @@ public class Drone extends Particle implements Shooter {
 				return;
 			}
 			for(Drone drone : grid.getDrones()) {
-				if(!hasLineOfSight(grid.getRebelShip(), drone)) {
+				if(!this.equals(drone) && !hasLineOfSight(grid.getRebelShip(), drone)) {
 					return;
 				}
 			}
@@ -63,7 +63,7 @@ public class Drone extends Particle implements Shooter {
 		}
 		Point closestPointDiff = possibleObstacle.getPosition().getDiffVector(closestPoint);
 
-		return Math.abs(closestPointDiff.getNorm() - possibleObstacle.getRadius()) >= EPSILON;
+		return closestPointDiff.getNorm() - Configuration.ENTITY_TO_PROJECTILE_PERSONAL_SPACE >= - EPSILON;
 	}
 	
 	@Override

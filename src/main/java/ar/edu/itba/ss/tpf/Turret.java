@@ -6,7 +6,7 @@ import java.util.List;
 public class Turret extends Particle implements Shooter {
 	private double lastTimeSinceFired;
 	private List<Projectile> projectiles;
-	private static final double EPSILON = Math.pow(10, -10);
+	private static final double EPSILON = Math.pow(10, -3);
 	
 	public Turret(double x, double y, double z) {
 		super(Configuration.TURRET_RADIUS, x, y, z);
