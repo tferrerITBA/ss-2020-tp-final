@@ -13,6 +13,11 @@ public class Turret extends Particle implements Shooter {
 		this.projectiles = new ArrayList<>();
 	}
 	
+	public Turret(int id, double radius, double x, double y, double z, double vx, double vy, double vz) {
+		super(id, radius, x, y, z, vx, vy, vz);
+		this.projectiles = new ArrayList<>();
+	}
+	
 	public void fire(double timeStep, Grid grid) {
 		if(lastTimeSinceFired > Configuration.TURRET_FIRE_RATE && hasLineOfSight(grid.getRebelShip(), grid.getDeathStar())) {
 			lastTimeSinceFired = 0;

@@ -16,6 +16,13 @@ public class Drone extends Particle implements Shooter {
 		lastTimeSinceFired = r.nextDouble() * Configuration.TURRET_FIRE_RATE;
 	}
 	
+	public Drone(int id, double radius, double x, double y, double z, double vx, double vy, double vz) {
+		super(id, radius, x, y, z, vx, vy, vz);
+		this.projectiles = new ArrayList<>();
+		Random r = new Random();
+		lastTimeSinceFired = r.nextDouble() * Configuration.TURRET_FIRE_RATE;
+	}
+	
 	public void fire(double timeStep, Grid grid) {
 		if(lastTimeSinceFired > Configuration.TURRET_FIRE_RATE) {
 			if(!hasLineOfSight(grid.getRebelShip(), grid.getDeathStar())) {

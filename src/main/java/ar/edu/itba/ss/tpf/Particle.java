@@ -51,14 +51,15 @@ public class Particle implements Cloneable {
 //		this.neighbors = new HashSet<>();
 //	}
 //	
-//	public Particle(int id, double radius, double mass, double x, double y, double vx, double vy) {
-//		this.id = id;
-//		this.radius = radius;
-//		this.mass = mass;
-//		this.position = new Point2D.Double(x, y);
-//		this.velocity = new Point2D.Double(vx, vy);
+	public Particle(int id, double radius/*, double mass*/, double x, double y, double z, double vx, double vy, double vz) {
+		count++;
+		this.id = id;
+		this.radius = radius;
+		//this.mass = mass;
+		this.position = new Point(x, y, z);
+		this.velocity = new Point(vx, vy, vz);
 //		this.neighbors = new HashSet<>();
-//	}
+	}
 	
 	@Override
 	public boolean equals(Object o) {

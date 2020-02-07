@@ -1,13 +1,17 @@
 package ar.edu.itba.ss.tpf;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Configuration {
 
@@ -54,6 +58,7 @@ public class Configuration {
 	public static final double TAU = 0.5; // s
 	
 	private static double timeLimit;
+	private static boolean readFromFile;
 	private static String fileName = "";
 	///////
 //	public static final double A_CONSTANT = 2000; // N
@@ -82,6 +87,13 @@ public class Configuration {
 	    else
 	    	timeLimit = selectedTimeLimit;
 	    
+	    System.out.println("Read data from input file? [y/n]");
+	    String readFile = "";
+	    while(!readFile.equals("y") && !readFile.equals("n")) {
+	    	readFile = scanner.nextLine();
+		}
+	    readFromFile = readFile.equals("y");
+	    
 	    System.out.println("Enter Filename:");
 	    while(fileName == "") {
 	    	fileName = scanner.nextLine();
@@ -92,8 +104,37 @@ public class Configuration {
 	    scanner.close();
 	}
 	
+	public static List<Particle> initializeParticles() {
+		if(readFromFile) {
+			return parseInputFile();
+		} else {
+			return generateRandomInputFiles();
+		}
+	}
+	
+	private static List<Particle> parseInputFile() {
+		List<Particle> particles = new ArrayList<>();
+		try(BufferedReader br = new BufferedReader(new FileReader(INPUT_FILE_NAME))) {
+			String line = br.readLine();
+			int index = 0;
+			while(line != null) {
+				String[] attributes = line.split(" ");
+				attributes = removeSpaces(attributes);
+				particles.add(parseParticle(attributes, index));
+				
+				line = br.readLine();
+				index++;
+			}
+		} catch(Exception e) {
+			System.err.println("Failed to read input file.");
+			e.printStackTrace();
+		}
+		
+		return particles;
+	}
+
 	/* Parameters must have already been requested */
-	public static List<Particle> generateRandomInputFilesAndParseConfiguration() {
+	public static List<Particle> generateRandomInputFiles() {
 		List<Particle> particles = generateParticles();
 		generateInputFile(particles);
 		generateOvitoOutputFile();
@@ -101,57 +142,33 @@ public class Configuration {
 	}
 
 	private static void generateInputFile(List<Particle> particles) {
-//		int invalidPositions = 0;
 		File inputFile = new File(INPUT_FILE_NAME);
 		inputFile.delete();
-//		Random r = new Random();
 
 		try(FileWriter fw = new FileWriter(inputFile)) {
 			inputFile.createNewFile();
-			fw.write("0\n");
+			//fw.write("0\n");
 
-			int i;
-			for(i = 0; i < particles.size(); i++) {
-				Particle p = particles.get(i);
-				
-				if(i > 1) {
-	//				double randomPositionX = 0;
-	//				double randomPositionY = 0;
-	//				boolean isValidPosition = false;
-	//
-	//				while (!isValidPosition) {
-	//					//randomPositionX = (externalRadius * 2 - 2 * p.getRadius()) * r.nextDouble() + p.getRadius();
-	//					//randomPositionY = (externalRadius * 2 - 2 * p.getRadius()) * r.nextDouble() + p.getRadius();
-	//					isValidPosition = validateParticlePosition(particles, randomPositionX, randomPositionY, p.getRadius());
-	//
-	//					invalidPositions += (isValidPosition) ? 0 : 1;
-	//				}
-	//				if (invalidPositions > INVALID_POSITION_LIMIT) break;
-	//				invalidPositions = 0;
-	//				p.setPosition(randomPositionX, randomPositionY);
-				}
-
+			for(Particle p : particles) {
 				fw.write(p.getId() + " " + p.getRadius() + " " 
 						+ p.getPosition().getX() + " " + p.getPosition().getY() + " " + p.getPosition().getZ() + " " 
 						+ p.getVelocity().getX() + " " + p.getVelocity().getY() + " " + p.getVelocity().getX() + "\n");
 			}
-//			particles.removeAll(particles.subList(i, particles.size()));
-//			particleCount = particles.size();
 		} catch (IOException e) {
 			System.err.println("Failed to create input file.");
 			e.printStackTrace();
 		}
 	}
 	
-//	private static Integer stringToInt(String s) {
-//		Integer i = null;
-//		try {
-//			i = Integer.valueOf(s);
-//		} catch(NumberFormatException e) {
-//			return null;
-//		}
-//		return i;
-//	}
+	private static Integer stringToInt(String s) {
+		Integer i = null;
+		try {
+			i = Integer.valueOf(s);
+		} catch(NumberFormatException e) {
+			return null;
+		}
+		return i;
+	}
 	
 	private static Double stringToDouble(String s) {
 		Double d = null;
@@ -161,6 +178,52 @@ public class Configuration {
 			return null;
 		}
 		return d;
+	}
+	
+	private static String[] removeSpaces(String[] array) {
+		List<String> list = new ArrayList<>(Arrays.asList(array));
+		List<String> filteredList = list.stream().filter(s -> !s.equals("") && !s.equals(" ")).collect(Collectors.toList());
+		String[] newArray = new String[filteredList.size()];
+		return filteredList.toArray(newArray);
+	}
+	
+	private static Particle parseParticle(String[] attributes, int index) {
+		Integer id = null;
+		Double radius = null, x = null, y = null, z = null, vx = null, vy = null, vz = null;
+		if(attributes.length != 8
+			|| (id = stringToInt(attributes[0])) == null || id < 0
+			|| (radius = stringToDouble(attributes[1])) == null || radius < 0
+			|| (x = stringToDouble(attributes[2])) == null || radius < 0
+			|| (y = stringToDouble(attributes[3])) == null || radius < 0
+			|| (z = stringToDouble(attributes[4])) == null || radius < 0
+			|| (vx = stringToDouble(attributes[5])) == null || radius < 0
+			|| (vy = stringToDouble(attributes[6])) == null || radius < 0
+			|| (vz = stringToDouble(attributes[7])) == null || radius < 0) {
+				failWithMessage(attributes + " is an invalid Particle.");
+			}
+		
+		if(index == 0) {
+			/* Rebel Ship */
+			return new RebelShip(id, radius, x, y, z, vx, vy, vz);
+		} else if(index == 1) {
+			/* Death Star */
+			return new DeathStar(id, radius, x, y, z, vx, vy, vz);
+		} else if(index > 1 && index <= 1 + 3 * TURRET_COUNT) {
+			/* Turret */
+			Turret turret = new Turret(id, radius, x, y, z, vx, vy, vz);
+			turrets.add(turret);
+			return turret;
+		} else {
+			/* Drone */
+			Drone drone = new Drone(id, radius, x, y, z, vx, vy, vz);
+			drones.add(drone);
+			return drone;
+		}
+	}
+	
+	private static void failWithMessage(String message) {
+		System.err.println(message);
+		System.exit(1);
 	}
 	
 	/* Time (0) */

@@ -6,4 +6,8 @@ public class RebelShip extends Particle {
 		super(rebelShipRadius, x, y, z);
 	}
 
+	public RebelShip(int id, double radius, double x, double y, double z, double vx, double vy, double vz) {
+		super(id, radius, x, y, z, vx, vy, vz);
+	}
+
 }

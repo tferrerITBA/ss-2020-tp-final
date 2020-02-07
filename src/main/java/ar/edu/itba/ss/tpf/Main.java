@@ -14,7 +14,7 @@ public class Main {
 	}
 	
 	private static void executeSingleRun() {
-		List<Particle> particles = Configuration.generateRandomInputFilesAndParseConfiguration();
+		List<Particle> particles = Configuration.initializeParticles();
 //		Configuration.writeOvitoOutputFile(0, particles);
 		Grid grid = new Grid(particles);
 		PredictiveCollisionAvoidanceManager manager = new PredictiveCollisionAvoidanceManager(grid);
