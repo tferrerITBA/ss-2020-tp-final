@@ -326,7 +326,7 @@ public class Configuration {
 		try(FileWriter fw = new FileWriter(outputFile, true)) {
 			fw.write(particles.size() + "\n");
 			fw.write("Lattice=\"" + WIDTH + " 0.0 0.0 0.0 " + DEPTH + " 0.0 0.0 0.0 " + HEIGHT
-				+ "\" Properties=id:I:1:radius:R:1:pos:R:3:velo:R:3 Time=" + String.format(Locale.US, "%.2g", time) + "\n");
+				+ "\" Properties=id:I:1:radius:R:1:pos:R:3:velo:R:3 Time=" + String.format(Locale.US, "%.3g", time) + "\n");
 			for(Particle p : particles) {
 				writeOvitoParticle(fw, p);
 			}
