@@ -1,23 +1,35 @@
 from ovito.io import import_file
-from ovito.vis import VectorDisplay
 from ovito.modifiers import *
 
-node = import_file("ovito_output.xyz", multiple_frames = True, columns = 
-    ['Particle Identifier', 'Radius', 'Position.X', 'Position.Y', 'Velocity.X', 'Velocity.Y', 'Pressure'])
-# id:I:1:radius:R:1:pos:R:2:velo:R:2:color:R:3
+node = import_file("./test.xyz", multiple_frames = True, columns = [
+  'Particle Identifier', 'Radius', 'Position.X', 'Position.Y', 'Position.Z',
+  'Velocity.X', 'Velocity.Y', 'Velocity.Z'
+])
+# id:I:1:radius:R:1:pos:R:3:velo:R:3
 node.add_to_scene()
 
-#cell = node.source.cell
-#mat = cell.matrix.copy()
-# cell vectors
-#mat[0][0] = 0.4 # width
-#mat[1][1] = 1.5 # height
-# cell origin
-#mat[0][3] = 0 # X origin
-#mat[1][3] = 0 # Y origin
+# Periodic Boundary Condition (X,Y,Z)
+# node.source.cell.pbc = (False, False, False)
 
-#cell.matrix = mat
+selection = ExpressionSelectionModifier(
+  operate_on = 'particles',
+  expression = 'ParticleIdentifier == 0'
+)
 
-node.modifiers.append(modifier)
+trajectory = GenerateTrajectoryLinesModifier(only_selected = True)
+
+color = ColorCodingModifier(
+  particle_property = 'Radius',
+  start_value = 2,
+  end_value = 0
+)
+
+node.modifiers.append(selection)
+node.modifiers.append(trajectory)
+node.modifiers.append(color)
+
+trajectory.generate()
+
+node.modifiers.remove(selection)
 
 node.compute()
