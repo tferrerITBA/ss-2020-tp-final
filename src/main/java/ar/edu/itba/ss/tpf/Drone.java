@@ -70,7 +70,7 @@ public class Drone extends Particle implements Shooter {
 		}
 		Point closestPointDiff = possibleObstacle.getPosition().getDiffVector(closestPoint);
 
-		return closestPointDiff.getNorm() - Configuration.ENTITY_TO_PROJECTILE_PERSONAL_SPACE >= - EPSILON;
+		return closestPointDiff.getNorm() - possibleObstacle.getRadius() >= - EPSILON;
 	}
 	
 	@Override

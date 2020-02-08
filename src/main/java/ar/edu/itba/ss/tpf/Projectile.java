@@ -11,10 +11,13 @@ public class Projectile extends Particle {
 	public Shooter getShooter() {
 		return shooter;
 	}
+	
+	public void setShooter(Shooter shooter) {
+		this.shooter = shooter;
+	}
 
 	@Override
 	public String toString() {
 		return "Projectile [getId()=" + getId() + ", getPosition()=" + getPosition() + "]";
 	}
-
 }

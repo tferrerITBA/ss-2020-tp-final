@@ -40,21 +40,25 @@ public class Configuration {
 	private static List<Drone> drones = new ArrayList<Drone>();
 	public static final double DRONE_RADIUS = 1.0; // m
 	public static final double DRONE_DESIRED_VEL = 5.0;
-	public static final int DRONE_COUNT = 5;
+	public static final double DRONE_MAX_VEL = DRONE_DESIRED_VEL;
+	public static final int DRONE_COUNT = 10;
 	
 	public static final double COLLISION_PREDICTION_TIME_LIMIT = 1.5;
 	public static final int COLLISION_AWARENESS_COUNT = 30;
 	
-	public static final double ENTITY_TO_PROJECTILE_PERSONAL_SPACE = 2.0;
-	public static final double DRONE_TO_DRONE_PERSONAL_SPACE = 1.5;
+	public static final double REBEL_SHIP_TO_PROJECTILE_PERSONAL_SPACE = REBEL_SHIP_RADIUS + 0.5;
+	public static final double DRONE_TO_PROJECTILE_PERSONAL_SPACE = DRONE_RADIUS + 0.5;
+	public static final double DRONE_TO_DRONE_PERSONAL_SPACE = 5.0;
 	public static final double DRONE_TO_REBEL_SHIP_PERSONAL_SPACE = 15.0;
 	public static final double REBEL_SHIP_TO_DRONE_PERSONAL_SPACE = 15.0;
+	public static final double REBEL_SHIP_TO_TURRET_PERSONAL_SPACE = 15.0;
 	public static final double WALL_SAFE_DISTANCE = 10.0;
 	public static final double DEATH_STAR_SAFE_DISTANCE = 1.0;
 	public static final int K_CONSTANT = 2;
 	
 	public static final double TIME_STEP = 0.0001;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
 	public static final double DESIRED_VEL = 5.0; // m/s
+	public static final double REBEL_SHIP_MAX_VEL = 3 * DESIRED_VEL;
 	public static final double TAU = 0.5; // s
 	
 	private static double timeLimit;

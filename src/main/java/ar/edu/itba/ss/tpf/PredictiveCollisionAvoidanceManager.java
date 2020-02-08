@@ -47,11 +47,13 @@ public class PredictiveCollisionAvoidanceManager {
 			moveProjectiles();
 			moveRebelShip();
 			moveDrones();
+			checkDroneCollisions();
 		}
 	}
 
 	private boolean simulationEnded() {
-		if(hasCollided(grid.getRebelShip(), grid.getProjectiles())) {
+		if(hasCollided(grid.getRebelShip())) {
+			System.out.println("Ship has been destroyed.");
 			return true;
 		}
 		
@@ -68,14 +70,45 @@ public class PredictiveCollisionAvoidanceManager {
 		return false;
 	}
 
-	private boolean hasCollided(Particle rebelShip, List<Projectile> projectiles) {
-		for(Projectile projectile : projectiles) {
-			if(rebelShip.getPosition().getDiffVector(projectile.getPosition()).getNorm() < rebelShip.getRadius()) {
-				System.out.println("Ship has been destroyed.");
+	private boolean hasCollided(Particle particle) {
+		for(Projectile projectile : grid.getProjectiles()) {
+			if(particle instanceof RebelShip || (particle instanceof Drone && !((Drone)particle).getProjectiles().contains(projectile))) {
+				if(particle.inContact(projectile)) {
+					return true;
+				}
+			}
+		}
+		for(Turret turret : grid.getTurrets()) {
+			if(particle.inContact(turret)) {
 				return true;
 			}
 		}
+		for(Drone drone : grid.getDrones()) {
+			if(!particle.equals(drone) && particle.inContact(drone)) {
+				return true;
+			}
+		}
+		if(particle.inContact(grid.getDeathStar())) {
+			return true;
+		}
+		
 		return false;
+	}
+	
+	private void checkDroneCollisions() {
+		List<Drone> toDelete = new ArrayList<>();
+		for(Drone drone : grid.getDrones()) {
+			if(hasCollided(drone)) {
+				toDelete.add(drone);
+			}
+		}
+		if(!toDelete.isEmpty()) {
+			for(Drone drone : toDelete) {
+				drone.getProjectiles().forEach(p -> p.setShooter(null));
+				grid.getDrones().remove(drone);
+				grid.getParticles().remove(drone);
+			}
+		}
 	}
 
 	private void moveRebelShip() {
@@ -84,10 +117,10 @@ public class PredictiveCollisionAvoidanceManager {
     	Point wallForce = getWallForce(rebelShip);
     	Point evasiveForce = getAverageEvasiveForce(rebelShip, goal, Configuration.DESIRED_VEL);
     	Point totalForce = goalForce.getSumVector(wallForce).getSumVector(evasiveForce);
-    	//System.out.println("GOAL " + goalForce.getNorm());
+    	
     	Point newVelocity = rebelShip.getVelocity().getSumVector(totalForce.getScalarMultiplication(timeStep));
-    	if(newVelocity.getNorm() > 3 * Configuration.DESIRED_VEL) { // TODO PONER EN CONFIG
-    		newVelocity = newVelocity.normalize().getScalarMultiplication(3 * Configuration.DESIRED_VEL);
+    	if(newVelocity.getNorm() > Configuration.REBEL_SHIP_MAX_VEL) {
+    		newVelocity = newVelocity.normalize().getScalarMultiplication(Configuration.REBEL_SHIP_MAX_VEL);
     	}
 		rebelShip.setVelocity(newVelocity);
 		rebelShip.setPosition(rebelShip.getPosition().getSumVector(rebelShip.getVelocity().getScalarMultiplication(timeStep)));
@@ -103,8 +136,8 @@ public class PredictiveCollisionAvoidanceManager {
         	Point totalForce = goalForce.getSumVector(wallForce).getSumVector(evasiveForce);
         	
         	Point newVelocity = drone.getVelocity().getSumVector(totalForce.getScalarMultiplication(timeStep));
-        	if(newVelocity.getNorm() > Configuration.DESIRED_VEL) {
-        		newVelocity = newVelocity.normalize().getScalarMultiplication(Configuration.DRONE_DESIRED_VEL);
+        	if(newVelocity.getNorm() > Configuration.DRONE_MAX_VEL) {
+        		newVelocity = newVelocity.normalize().getScalarMultiplication(Configuration.DRONE_MAX_VEL);
         	}
         	drone.setVelocity(newVelocity);
     		drone.setPosition(drone.getPosition().getSumVector(drone.getVelocity().getScalarMultiplication(timeStep)));
@@ -115,7 +148,7 @@ public class PredictiveCollisionAvoidanceManager {
     
     private void moveProjectiles() {
     	List<Projectile> projectiles = grid.getProjectiles();
-    	for(Projectile p : projectiles) { // TODO CHECK COLLISIONS
+    	for(Projectile p : projectiles) {
     		p.setPosition(p.getPosition().getSumVector(p.getVelocity().getScalarMultiplication(timeStep)));
     	}
     }
@@ -126,9 +159,11 @@ public class PredictiveCollisionAvoidanceManager {
     	for(Projectile p : projectiles) {
     		Point pos = p.getPosition();
     		if(pos.getX() < 0 || pos.getY() < 0 || pos.getZ() < 0 || pos.getX() > Configuration.WIDTH
-    				|| pos.getY() > Configuration.HEIGHT || pos.getZ() > Configuration.DEPTH) {
+    				|| pos.getY() > Configuration.HEIGHT || pos.getZ() > Configuration.DEPTH
+    				|| p.inContact(grid.getDeathStar())) {
     			toDelete.add(p);
-    			p.getShooter().getProjectiles().remove(p);
+    			if(p.getShooter() != null)
+    				p.getShooter().getProjectiles().remove(p);
     		}
     	}
     	grid.getParticles().removeAll(toDelete);
@@ -231,6 +266,7 @@ public class PredictiveCollisionAvoidanceManager {
         		}
     		}
     	}
+    	
     	for(Drone drone : grid.getDrones()) {
     		if(!particle.equals(drone)) {
     			Collision collision = predictCollision(particle, drone, desiredVelocity);
@@ -240,11 +276,19 @@ public class PredictiveCollisionAvoidanceManager {
         		//if(particle.getId() == 18 && drone.getId() == 20 && accumulatedTime > 21.2 && accumulatedTime < 21.25) System.out.println(collision + " " + particle.getPosition().getDiffVector(drone.getPosition()).getNorm());
     		}
     	}
+    	
     	if(!particle.equals(grid.getRebelShip())) {
     		/* Must be a drone */
     		Collision collision = predictCollision(particle, grid.getRebelShip(), desiredVelocity);
     		if(collision != null) {
     			collisions.add(collision);
+    		}
+    	} else {
+    		for(Turret turret : grid.getTurrets()) {
+    			Collision collision = predictCollision(particle, turret, desiredVelocity);
+        		if(collision != null) {
+        			collisions.add(collision);
+        		}
     		}
     	}
     	
@@ -287,21 +331,26 @@ public class PredictiveCollisionAvoidanceManager {
 	}
 	
 	private double getPersonalSpace(Particle particle, Particle other) {
-    	if(other.getClass() == Projectile.class) {
-    		return Configuration.ENTITY_TO_PROJECTILE_PERSONAL_SPACE;
-    	}
-    	
-    	/* Other is an entity */
-    	if(particle.getClass() == Drone.class) {
+    	if(particle instanceof Drone) {
     		/* Particle is drone */
-			if(other.getClass() == Drone.class) {
+    		if(other instanceof Projectile) {
+    			return Configuration.DRONE_TO_PROJECTILE_PERSONAL_SPACE;
+    		} else if(other instanceof Drone) {
 				return Configuration.DRONE_TO_DRONE_PERSONAL_SPACE;
 			} else {
+				/* Other is rebel ship */
 				return Configuration.DRONE_TO_REBEL_SHIP_PERSONAL_SPACE;
 			}
 		} else {
-			/* Particle is rebel ship => Other is drone */
-			return Configuration.REBEL_SHIP_TO_DRONE_PERSONAL_SPACE;
+			/* Particle is rebel ship */
+			if(other instanceof Projectile) {
+    			return Configuration.REBEL_SHIP_TO_PROJECTILE_PERSONAL_SPACE;
+    		} else if(other instanceof Drone) {
+				return Configuration.REBEL_SHIP_TO_DRONE_PERSONAL_SPACE;
+			} else {
+				/* Other is turret */
+				return Configuration.REBEL_SHIP_TO_TURRET_PERSONAL_SPACE;
+			}
 		}
 	}
 
@@ -309,7 +358,7 @@ public class PredictiveCollisionAvoidanceManager {
     	Point c_i = particle.getPosition().getSumVector(desiredVelocity.getScalarMultiplication(collisionTime));
     	Point c_j = other.getPosition().getSumVector(other.getVelocity().getScalarMultiplication(collisionTime));
     	Point forceDirection = c_i.getDiffVector(c_j).normalize();
-    	//if(Double.compare(collisionTime, 0) == 0) System.out.println("TIME CERO");
+    	
     	double D = c_i.getDiffVector(particle.getPosition()).getNorm() + c_i.getDiffVector(c_j).getNorm() 
     			- getPersonalSpace(particle, other)/*particle.getRadius()*/ - other.getRadius();//TODO PREGUNTAR
     	double d_min = 0.25;

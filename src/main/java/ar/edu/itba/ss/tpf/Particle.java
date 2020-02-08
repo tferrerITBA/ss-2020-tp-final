@@ -164,6 +164,10 @@ public class Particle implements Cloneable {
 		return neighbors.contains(other);
 	}
 	
+	public boolean inContact(Particle other) {
+		return this.getPosition().getDiffVector(other.getPosition()).getNorm() < this.getRadius() + other.getRadius();
+	}
+	
 //	public double getBorderToBorderDistance(final Particle other) {
 //		double horizontalDistance = Math.abs(getPosition().x - other.getPosition().x);
 //		double verticalDistance = Math.abs(getPosition().y - other.getPosition().y);
