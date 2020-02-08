@@ -9,20 +9,27 @@ public class Drone extends Particle implements Shooter {
 	private List<Projectile> projectiles;
 	private static final double EPSILON = Math.pow(10, -10);
 	
-	public Drone(double x, double y, double z) {
-		super(Configuration.DRONE_RADIUS, x, y, z);
+	public Drone(double radius, double mass, double x, double y, double z) {
+		super(radius, mass, x, y, z);
 		this.projectiles = new ArrayList<>();
 		Random r = new Random();
 		lastTimeSinceFired = r.nextDouble() * Configuration.TURRET_FIRE_RATE;
 	}
 	
-	public Drone(int id, double radius, double x, double y, double z, double vx, double vy, double vz) {
-		super(id, radius, x, y, z, vx, vy, vz);
+	public Drone(int id, double radius, double mass, double x, double y, double z, double vx, double vy, double vz) {
+		super(id, radius, mass, x, y, z, vx, vy, vz);
 		this.projectiles = new ArrayList<>();
 		Random r = new Random();
 		lastTimeSinceFired = r.nextDouble() * Configuration.TURRET_FIRE_RATE;
 	}
 	
+	public Drone(int id, double radius, double mass, double x, double y, double z, double vx, double vy, double vz,
+			double lastTimeSinceFired, List<Projectile> projectiles) {
+		super(id, radius, mass, x, y, z, vx, vy, vz);
+		this.lastTimeSinceFired = lastTimeSinceFired;
+		this.projectiles = projectiles; // TODO CLONAR LISTA?
+	}
+
 	public void fire(double timeStep, Grid grid) {
 		if(lastTimeSinceFired > Configuration.TURRET_FIRE_RATE) {
 			if(!hasLineOfSight(grid.getRebelShip(), grid.getDeathStar())) {
@@ -47,7 +54,6 @@ public class Drone extends Particle implements Shooter {
 				Point newPosition = initPosition.getSumVector(diffProjectilePosition.getScalarMultiplication(i));
 				Projectile projectile = new Projectile(this, newPosition.getX(), newPosition.getY(), newPosition.getZ(),
 						projectileVelocity.getX(), projectileVelocity.getY(), projectileVelocity.getZ());
-				grid.getParticles().add(projectile);
 				grid.getProjectiles().add(projectile);
 				projectiles.add(projectile);
 			}
@@ -76,6 +82,12 @@ public class Drone extends Particle implements Shooter {
 	@Override
 	public List<Projectile> getProjectiles() {
 		return projectiles;
+	}
+	
+	@Override
+	public Drone clone() {
+		return new Drone(getId(), getRadius(), getMass(), getPosition().getX(), getPosition().getY(), getPosition().getZ(),
+				getVelocity().getX(), getVelocity().getY(), getVelocity().getZ(), lastTimeSinceFired, projectiles);
 	}
 
 	@Override

@@ -33,7 +33,6 @@ public class Turret extends Particle implements Shooter {
 				Point newPosition = initPosition.getSumVector(diffProjectilePosition.getScalarMultiplication(i));
 				Projectile projectile = new Projectile(this, newPosition.getX(), newPosition.getY(), newPosition.getZ(),
 						projectileVelocity.getX(), projectileVelocity.getY(), projectileVelocity.getZ());
-				grid.getParticles().add(projectile);
 				grid.getProjectiles().add(projectile);
 				projectiles.add(projectile);
 			}

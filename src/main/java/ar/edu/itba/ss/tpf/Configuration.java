@@ -22,7 +22,7 @@ public class Configuration {
 	public static final double DEPTH = 100.0; // m
 	
 	public static final double REBEL_SHIP_RADIUS = 1.5; // m
-	//public static final double REBEL_SHIP_MASS = 1.0; // m CAMBIAR
+	public static final double REBEL_SHIP_MASS = 1.0; // m CAMBIAR
 	public static final Point REBEL_SHIP_INIT_POSITION = new Point(WIDTH / 8, HEIGHT / 2, DEPTH / 2);
 	
 	public static final double DEATH_STAR_RADIUS = 20.0; // m
@@ -39,9 +39,10 @@ public class Configuration {
 	
 	private static List<Drone> drones = new ArrayList<Drone>();
 	public static final double DRONE_RADIUS = 1.0; // m
+	public static final double DRONE_MASS = 0.5;
 	public static final double DRONE_DESIRED_VEL = 5.0;
 	public static final double DRONE_MAX_VEL = DRONE_DESIRED_VEL;
-	public static final int DRONE_COUNT = 10;
+	public static final int DRONE_COUNT = 1;
 	
 	public static final double COLLISION_PREDICTION_TIME_LIMIT = 1.5;
 	public static final int COLLISION_AWARENESS_COUNT = 30;
@@ -208,7 +209,7 @@ public class Configuration {
 		
 		if(index == 0) {
 			/* Rebel Ship */
-			return new RebelShip(id, radius, x, y, z, vx, vy, vz);
+			return new RebelShip(id, radius, REBEL_SHIP_MASS, x, y, z, vx, vy, vz);
 		} else if(index == 1) {
 			/* Death Star */
 			return new DeathStar(id, radius, x, y, z, vx, vy, vz);
@@ -219,7 +220,7 @@ public class Configuration {
 			return turret;
 		} else {
 			/* Drone */
-			Drone drone = new Drone(id, radius, x, y, z, vx, vy, vz);
+			Drone drone = new Drone(id, radius, DRONE_MASS, x, y, z, vx, vy, vz);
 			drones.add(drone);
 			return drone;
 		}
@@ -245,7 +246,7 @@ public class Configuration {
     }
 
 	private static Particle createRebelShip() {
-    	return new RebelShip(REBEL_SHIP_RADIUS, REBEL_SHIP_INIT_POSITION.getX(), 
+    	return new RebelShip(REBEL_SHIP_RADIUS, REBEL_SHIP_MASS, REBEL_SHIP_INIT_POSITION.getX(), 
 				REBEL_SHIP_INIT_POSITION.getY(), REBEL_SHIP_INIT_POSITION.getZ());
 	}
     
@@ -300,7 +301,7 @@ public class Configuration {
 				z = r.nextDouble() * (DEPTH - 2 * DRONE_RADIUS) + DRONE_RADIUS;
 				isValidPosition = validateDronePosition(x, y, z);
 			}
-			drones.add(new Drone(x, y, z));
+			drones.add(new Drone(DRONE_RADIUS, DRONE_MASS, x, y, z));
 		}
 	}
 
@@ -325,14 +326,23 @@ public class Configuration {
 		}
 	}
 	
-	public static void writeOvitoOutputFile(double time, List<Particle> particles) {
+	public static void writeOvitoOutputFile(double time, Grid grid) {
 		File outputFile = new File(OUTPUT_FILE_NAME);
 		try(FileWriter fw = new FileWriter(outputFile, true)) {
-			fw.write(particles.size() + "\n");
+			fw.write((2 + grid.getTurrets().size() + grid.getDrones().size() + grid.getProjectiles().size()) + "\n");
 			fw.write("Lattice=\"" + WIDTH + " 0.0 0.0 0.0 " + DEPTH + " 0.0 0.0 0.0 " + HEIGHT
 				+ "\" Properties=id:I:1:radius:R:1:pos:R:3:velo:R:3 Time=" + String.format(Locale.US, "%.3g", time) + "\n");
-			for(Particle p : particles) {
-				writeOvitoParticle(fw, p);
+			
+			writeOvitoParticle(fw, grid.getRebelShip());
+			writeOvitoParticle(fw, grid.getDeathStar());
+			for(Turret turret : grid.getTurrets()) {
+				writeOvitoParticle(fw, turret);
+			}
+			for(Drone drone : grid.getDrones()) {
+				writeOvitoParticle(fw, drone);
+			}
+			for(Projectile projectile : grid.getProjectiles()) {
+				writeOvitoParticle(fw, projectile);
 			}
 		} catch (IOException e) {
 			System.err.println("Failed to write Ovito output file.");

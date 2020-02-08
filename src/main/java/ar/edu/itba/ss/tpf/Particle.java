@@ -1,8 +1,6 @@
 package ar.edu.itba.ss.tpf;
 
-import java.util.Collections;
 import java.util.Objects;
-import java.util.Set;
 
 public class Particle implements Cloneable {
 	
@@ -11,10 +9,8 @@ public class Particle implements Cloneable {
 	private int id;
 	private double radius;
 	private double mass;
-	private double pressure;
 	private Point position;
 	private Point velocity;
-	private Set<Particle> neighbors;
 	
 	public Particle(final double radius, final double mass, final double x, final double y, final double z) {
 		this.id = count++;
@@ -22,7 +18,6 @@ public class Particle implements Cloneable {
 		this.mass = mass;
 		this.position = new Point(x, y, z);
 		this.velocity = new Point(0, 0, 0);
-		//this.neighbors = new HashSet<>();
 	}
 	
 	public Particle(final double radius, final double x, final double y, final double z) {
@@ -30,7 +25,6 @@ public class Particle implements Cloneable {
 		this.radius = radius;
 		this.position = new Point(x, y, z);
 		this.velocity = new Point(0, 0, 0);
-		//this.neighbors = new HashSet<>();
 	}
 	
 	public Particle(final double radius, final double x, final double y, final double z,
@@ -39,7 +33,6 @@ public class Particle implements Cloneable {
 		this.radius = radius;
 		this.position = new Point(x, y, z);
 		this.velocity = new Point(vx, vy, vz);
-		//this.neighbors = new HashSet<>();
 	}
 	
 //	public Particle(final double radius, final double mass, final double x, final double y, final double vx, final double vy) {
@@ -51,14 +44,21 @@ public class Particle implements Cloneable {
 //		this.neighbors = new HashSet<>();
 //	}
 //	
-	public Particle(int id, double radius/*, double mass*/, double x, double y, double z, double vx, double vy, double vz) {
+	public Particle(int id, double radius, double mass, double x, double y, double z, double vx, double vy, double vz) {
 		count++;
 		this.id = id;
 		this.radius = radius;
-		//this.mass = mass;
+		this.mass = mass;
 		this.position = new Point(x, y, z);
 		this.velocity = new Point(vx, vy, vz);
-//		this.neighbors = new HashSet<>();
+	}
+	
+	public Particle(int id, double radius, double x, double y, double z, double vx, double vy, double vz) {
+		count++;
+		this.id = id;
+		this.radius = radius;
+		this.position = new Point(x, y, z);
+		this.velocity = new Point(vx, vy, vz);
 	}
 	
 	@Override
@@ -82,12 +82,11 @@ public class Particle implements Cloneable {
 //				+ " ; y: " + position.y + " ; vx: " + velocity.x + " ; vy: " + velocity.y;
 //	}
 	
-//	@Override
-//	public Particle clone() {
-//		Particle p = new Particle(id, radius, mass, position.getX(), position.getY(), velocity.getX(), velocity.getY());
-//		p.setPressure(p.getPressure());
-//		return p;
-//	}
+	@Override
+	public Particle clone() {
+		return new Particle(id, radius, mass, position.getX(), position.getY(), position.getZ(), 
+				velocity.getX(), velocity.getY(), velocity.getZ());
+	}
 
 	public int getId() {
 		return id;
@@ -99,10 +98,6 @@ public class Particle implements Cloneable {
 
 	public double getMass() {
 		return mass;
-	}
-
-	public double getPressure() {
-		return Math.abs(pressure);
 	}
 
 	public Point getPosition() {
@@ -119,15 +114,6 @@ public class Particle implements Cloneable {
 		position = p;
 	}
 
-	public void calculatePressure(double forces) {
-		double perimeter =  Math.PI * 2.0 * radius;
-		this.pressure = forces / perimeter;
-	}
-
-	public void setPressure(double pressure) {
-		this.pressure = pressure;
-	}
-
 	public Point getVelocity() {
 		return velocity;
 	}
@@ -140,28 +126,6 @@ public class Particle implements Cloneable {
 	
 	public void setVelocity(Point v) {
 		velocity = v;
-	}
-	
-//	public double getVelocityAngle() {
-//		return Math.atan2(velocity.y, velocity.x);
-//	}
-	
-	public Set<Particle> getNeighbors() {
-		return Collections.unmodifiableSet(neighbors);
-	}
-	
-	public void clearNeighbors() {
-		neighbors.clear();
-	}
-	
-	public void addNeighbor(Particle p) {
-		if(p == null)
-			return;
-		neighbors.add(p);
-	}
-	
-	public boolean isNeighbor(Particle other) {
-		return neighbors.contains(other);
 	}
 	
 	public boolean inContact(Particle other) {

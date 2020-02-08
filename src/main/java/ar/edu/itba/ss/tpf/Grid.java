@@ -2,13 +2,12 @@ package ar.edu.itba.ss.tpf;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Grid {
 	
-	private List<Particle> particles;
-	private Particle rebelShip;
-	private Particle deathStar;
+	//private List<Particle> particles;
+	private RebelShip rebelShip;
+	private DeathStar deathStar;
 	private List<Turret> turrets;
 	private List<Drone> drones;
 	private List<Projectile> projectiles;
@@ -17,9 +16,9 @@ public class Grid {
 	private final double height;
 	
 	public Grid(final List<Particle> particles) {
-		this.particles = particles;
-		this.rebelShip = particles.get(0);
-		this.deathStar = particles.get(1);
+		//this.particles = particles;
+		this.rebelShip = (RebelShip)particles.get(0);
+		this.deathStar = (DeathStar)particles.get(1);
 		this.turrets = Configuration.getTurrets();
 		this.drones = Configuration.getDrones();
 		this.projectiles = new ArrayList<>();
@@ -28,20 +27,20 @@ public class Grid {
 		this.height = Configuration.HEIGHT;
 	}
 	
-	public List<Particle> getParticles() {
-		return particles;
-	}
+//	public List<Particle> getParticles() {
+//		return particles;
+//	}
 	
-	public void setParticles(List<Particle> newParticles) {
-		Objects.requireNonNull(newParticles);
-		this.particles = newParticles;
-	}
+//	public void setParticles(List<Particle> newParticles) {
+//		Objects.requireNonNull(newParticles);
+//		this.particles = newParticles;
+//	}
 	
-	public Particle getRebelShip() {
+	public RebelShip getRebelShip() {
 		return rebelShip;
 	}
 
-	public Particle getDeathStar() {
+	public DeathStar getDeathStar() {
 		return deathStar;
 	}
 
@@ -68,5 +67,16 @@ public class Grid {
 	public double getHeight() {
 		return height;
 	}
+
+	public void setRebelShip(RebelShip rebelShip) {
+		this.rebelShip = rebelShip;
+	}
+
+	public void setDrones(List<Drone> drones) {
+		this.drones = drones;
+	}
 	
+	public void setProjectiles(List<Projectile> projectiles) {
+		this.projectiles = projectiles;
+	}
 }
