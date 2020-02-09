@@ -447,7 +447,7 @@ public class PredictiveCollisionAvoidanceManager {
 			if(optionalPrevParticle.isPresent()) {
 				prevParticle = optionalPrevParticle.get();
 			} else {
-				prevParticle = currentParticle.clone();
+				prevParticle = currentParticle.clone(); // TODO CHEQUEAR
 			}
 			
 			Particle predParticle = predictedParticles.stream().filter(p -> p.getId() == currentParticle.getId()).findFirst().get();
@@ -460,24 +460,42 @@ public class PredictiveCollisionAvoidanceManager {
 			Point correctedVelocity = currentParticle.getVelocity()
 					.getSumVector(predAcceleration.getScalarMultiplication((1 / 3.0) * timeStep))
 					.getSumVector(currAcceleration.getScalarMultiplication((5 / 6.0) * timeStep))
-					.getDiffVector(prevAcceleration).getScalarMultiplication((1 / 6.0) * timeStep);
+					.getDiffVector(prevAcceleration.getScalarMultiplication((1 / 6.0) * timeStep));
 			
 			if(currentParticle instanceof RebelShip && correctedVelocity.getNorm() > Configuration.REBEL_SHIP_MAX_VEL) {
 				correctedVelocity = correctedVelocity.normalize().getScalarMultiplication(Configuration.REBEL_SHIP_MAX_VEL);
 			} else if(currentParticle instanceof Drone && correctedVelocity.getNorm() > Configuration.DRONE_MAX_VEL) {
 				correctedVelocity = correctedVelocity.normalize().getScalarMultiplication(Configuration.DRONE_MAX_VEL);
 			}
-			//if(currentParticle.getId() == 0) System.out.println(currAcceleration.getNorm() + " " + prevAcceleration.getNorm() + " " + predAcceleration.getNorm());
-			prevParticle.setPosition(currentParticle.getPosition());
-			prevParticle.setVelocity(currentParticle.getVelocity());
+			//if(accumulatedTime < 0.001 && currentParticle.getId() == 0) System.out.println("PREV ACC: " + prevAcceleration + " " + prevAcceleration.getNorm() + ", CURR ACC: " + currAcceleration + " " + currAcceleration.getNorm() + ", PRED ACC: " + predAcceleration + " " + predAcceleration.getNorm() + ", PREV VEL: " + prevParticle.getVelocity() + " " + prevParticle.getVelocity().getNorm() + ", CURR VEL: " + currentParticle.getVelocity() + " " + currentParticle.getVelocity().getNorm() + ", PRED VEL: " + predParticle.getVelocity() + " " + predParticle.getVelocity().getNorm() + ", CORR VEL " + correctedVelocity + " " + correctedVelocity.getNorm());
+			//prevParticle.setPosition(currentParticle.getPosition());
+			//prevParticle.setVelocity(currentParticle.getVelocity());
 			updatedParticle.setPosition(predParticle.getPosition());
 			updatedParticle.setVelocity(correctedVelocity);
 			updatedParticles.add(updatedParticle);
 		}
 		
+		updatePreviousParticles(prevParticles, currentParticles);
+		
 		return updatedParticles;
 	}
     
+	private void updatePreviousParticles(List<Particle> prevParticles, List<Particle> currentParticles) {
+		for(Particle currentParticle : currentParticles) {
+			/* New projectiles do not have a previous reference */
+			Optional<Particle> optionalPrevParticle = prevParticles.stream().filter(p -> p.getId() == currentParticle.getId()).findFirst();
+			Particle prevParticle = null;
+			if(optionalPrevParticle.isPresent()) {
+				prevParticle = optionalPrevParticle.get();
+				prevParticle.setPosition(currentParticle.getPosition());
+				prevParticle.setVelocity(currentParticle.getVelocity());
+			} else {
+				prevParticle = currentParticle.clone();
+				prevParticles.add(prevParticle);
+			}
+		}
+	}
+
 	private List<Particle> predictParticles(/*final List<Particle> predictedParticles,*/
 			final List<Particle> currentParticles, final List<Particle> prevParticles) {
 		List<Particle> predictedParticles = new ArrayList<>();
@@ -503,7 +521,7 @@ public class PredictiveCollisionAvoidanceManager {
 			Point predictedVelocity = currentParticle.getVelocity()
 					.getSumVector(currAcceleration.getScalarMultiplication((3 / 2.0) * timeStep))
 					.getDiffVector(prevAcceleration.getScalarMultiplication((1 / 2.0) * timeStep));
-			//if(currentParticle.getId() == 0) System.out.println(currentParticle.getVelocity().getNorm() + " " + predictedVelocity.getNorm());
+			//if(currentParticle.getId() == 0) System.out.println(currAcceleration.getNorm() + " " + prevAcceleration.getNorm() + " " + currentParticle.getVelocity().getNorm() + " " + predictedVelocity.getNorm());
 			Particle predictedParticle = currentParticle.clone();//predictedParticles.stream().filter(p -> p.getId() == currentParticle.getId()).findFirst().get();
 			predictedParticle.setPosition(newPosition);
 			predictedParticle.setVelocity(predictedVelocity);
@@ -553,8 +571,8 @@ public class PredictiveCollisionAvoidanceManager {
     	Point acceleration = getAcceleration(particle, currentParticles);
 		
     	Point prevPosition = particle.getPosition().getDiffVector(particle.getVelocity().getScalarMultiplication(timeStep))
-    			.getSumVector(acceleration.getScalarMultiplication(Math.pow(timeStep, 2) / 2.0));
-		Point prevVelocity = particle.getVelocity().getDiffVector(acceleration.getScalarMultiplication(timeStep));
+    			.getSumVector(acceleration.getScalarMultiplication(Math.pow(timeStep, 2) / 2.0)); // TODO INICIALIZAR EN CERO AMBOS?
+		Point prevVelocity = new Point();//particle.getVelocity().getDiffVector(acceleration.getScalarMultiplication(timeStep));
 		
 		prevParticle.setPosition(prevPosition);
 		prevParticle.setVelocity(prevVelocity);
