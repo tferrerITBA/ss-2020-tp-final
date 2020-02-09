@@ -45,7 +45,7 @@ public class Particle implements Cloneable {
 //	}
 //	
 	public Particle(int id, double radius, double mass, double x, double y, double z, double vx, double vy, double vz) {
-		count++;
+		count++; // TODO OPTIONAL: SI ES CLONE NO AUMENTAR COUNT
 		this.id = id;
 		this.radius = radius;
 		this.mass = mass;

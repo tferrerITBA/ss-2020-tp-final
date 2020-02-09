@@ -27,7 +27,7 @@ public class Drone extends Particle implements Shooter {
 			double lastTimeSinceFired, List<Projectile> projectiles) {
 		super(id, radius, mass, x, y, z, vx, vy, vz);
 		this.lastTimeSinceFired = lastTimeSinceFired;
-		this.projectiles = projectiles; // TODO CLONAR LISTA?
+		this.projectiles = projectiles;
 	}
 
 	public void fire(double timeStep, Grid grid) {
@@ -82,6 +82,10 @@ public class Drone extends Particle implements Shooter {
 	@Override
 	public List<Projectile> getProjectiles() {
 		return projectiles;
+	}
+	
+	public void setProjectiles(List<Projectile> projectiles) {
+		this.projectiles = projectiles;
 	}
 	
 	@Override

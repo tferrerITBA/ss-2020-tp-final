@@ -42,7 +42,7 @@ public class Configuration {
 	public static final double DRONE_MASS = 0.5;
 	public static final double DRONE_DESIRED_VEL = 5.0;
 	public static final double DRONE_MAX_VEL = DRONE_DESIRED_VEL;
-	public static final int DRONE_COUNT = 1;
+	public static final int DRONE_COUNT = 5;
 	
 	public static final double COLLISION_PREDICTION_TIME_LIMIT = 1.5;
 	public static final int COLLISION_AWARENESS_COUNT = 30;

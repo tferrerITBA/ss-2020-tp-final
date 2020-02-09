@@ -472,11 +472,41 @@ public class PredictiveCollisionAvoidanceManager {
 			updatedParticles.add(updatedParticle);
 		}
 		
-		// TODO ARREGLAR REFERENCIAS EN UPDATED PARTICLES
+		updateProjectileReferences(updatedParticles);
 		
 		return updatedParticles;
 	}
     
+    /* Drones & Projectiles still have outdated references between them */
+	private void updateProjectileReferences(List<Particle> particles) {
+		int referenceId;
+		for(Particle particle : particles) {
+			if(particle instanceof Drone) {
+				Drone drone = (Drone) particle;
+				List<Projectile> updatedProjectiles = new ArrayList<>();
+				
+				for(Projectile projectile : drone.getProjectiles()) {
+					referenceId = projectile.getId();
+					final int refId = referenceId;
+					/* Search for the updated object within the updated particles */
+					updatedProjectiles.add((Projectile) particles.stream().filter(p -> p.getId() == refId).findFirst().get());
+				}
+				/* Update the entire projectiles list */
+				drone.setProjectiles(updatedProjectiles);
+			} else if(particle instanceof Projectile) {
+				Projectile projectile = (Projectile) particle;
+				//System.out.println(particle + " " + projectile.getShooter() + " " + ((Particle) projectile.getShooter()));
+				/* Search for the updated object within the updated particles (if shooter is a Turret it remains static) */
+				if(!(projectile.getShooter() instanceof Turret)) {
+					referenceId = ((Particle) projectile.getShooter()).getId();
+					final int refId = referenceId;
+					Particle shooter = particles.stream().filter(p -> p.getId() == refId).findFirst().get();
+					projectile.setShooter((Shooter) shooter);
+				}
+			}
+		}
+	}
+
 	private void updatePreviousParticles(List<Particle> prevParticles, List<Particle> currentParticles) {
 		for(Particle currentParticle : currentParticles) {
 			/* New projectiles do not have a previous reference */
@@ -517,6 +547,13 @@ public class PredictiveCollisionAvoidanceManager {
 			Point predictedVelocity = currentParticle.getVelocity()
 					.getSumVector(currAcceleration.getScalarMultiplication((3 / 2.0) * timeStep))
 					.getDiffVector(prevAcceleration.getScalarMultiplication((1 / 2.0) * timeStep));
+			
+			if(currentParticle instanceof RebelShip && predictedVelocity.getNorm() > Configuration.REBEL_SHIP_MAX_VEL) {
+				predictedVelocity = predictedVelocity.normalize().getScalarMultiplication(Configuration.REBEL_SHIP_MAX_VEL);
+			} else if(currentParticle instanceof Drone && predictedVelocity.getNorm() > Configuration.DRONE_MAX_VEL) {
+				predictedVelocity = predictedVelocity.normalize().getScalarMultiplication(Configuration.DRONE_MAX_VEL);
+			}
+			
 			//if(currentParticle.getId() == 0) System.out.println(currAcceleration.getNorm() + " " + prevAcceleration.getNorm() + " " + currentParticle.getVelocity().getNorm() + " " + predictedVelocity.getNorm());
 			Particle predictedParticle = currentParticle.clone();//predictedParticles.stream().filter(p -> p.getId() == currentParticle.getId()).findFirst().get();
 			predictedParticle.setPosition(newPosition);
@@ -524,7 +561,7 @@ public class PredictiveCollisionAvoidanceManager {
 			predictedParticles.add(predictedParticle);
 		}
 		
-		// TODO ARREGLAR REFERENCIAS EN PREDICTED PARTICLES
+		updateProjectileReferences(predictedParticles);
 		
 		return predictedParticles;
 	}
