@@ -49,11 +49,7 @@ public class PredictiveCollisionAvoidanceManager {
 			//moveProjectiles();
 			
 			List<Particle> updatedParticles = updateParticles(prevParticles/*, predictedParticles*/);
-			
-//			List
-//			deleteOutOfBoundsProjectiles(updatedParticles.stream().filter(p -> p instanceof Projectile).map(p -> (Projectile)p).collect(Collectors.toList()));
-//			checkDroneCollisions(updatedParticles);
-			
+			updatePreviousParticles(prevParticles, currentParticles);
 			setUpdatedParticlesInGrid(updatedParticles);
 			
 			deleteOutOfBoundsProjectiles();
@@ -444,17 +440,18 @@ public class PredictiveCollisionAvoidanceManager {
 			/* New projectiles do not have a previous reference */
 			Optional<Particle> optionalPrevParticle = prevParticles.stream().filter(p -> p.getId() == currentParticle.getId()).findFirst();
 			Particle prevParticle = null;
+			Point prevAcceleration = null;
 			if(optionalPrevParticle.isPresent()) {
 				prevParticle = optionalPrevParticle.get();
+				prevAcceleration = getAcceleration(prevParticle, prevParticles);
 			} else {
-				prevParticle = currentParticle.clone(); // TODO CHEQUEAR
+				prevAcceleration = new Point();
 			}
 			
 			Particle predParticle = predictedParticles.stream().filter(p -> p.getId() == currentParticle.getId()).findFirst().get();
 			Particle updatedParticle = currentParticle.clone();
 			
 			Point currAcceleration = getAcceleration(currentParticle, currentParticles);
-			Point prevAcceleration = getAcceleration(prevParticle, prevParticles);
 			Point predAcceleration = getAcceleration(predParticle, predictedParticles);
 			
 			Point correctedVelocity = currentParticle.getVelocity()
@@ -475,7 +472,7 @@ public class PredictiveCollisionAvoidanceManager {
 			updatedParticles.add(updatedParticle);
 		}
 		
-		updatePreviousParticles(prevParticles, currentParticles);
+		// TODO ARREGLAR REFERENCIAS EN UPDATED PARTICLES
 		
 		return updatedParticles;
 	}
@@ -484,15 +481,14 @@ public class PredictiveCollisionAvoidanceManager {
 		for(Particle currentParticle : currentParticles) {
 			/* New projectiles do not have a previous reference */
 			Optional<Particle> optionalPrevParticle = prevParticles.stream().filter(p -> p.getId() == currentParticle.getId()).findFirst();
-			Particle prevParticle = null;
 			if(optionalPrevParticle.isPresent()) {
-				prevParticle = optionalPrevParticle.get();
-				prevParticle.setPosition(currentParticle.getPosition());
-				prevParticle.setVelocity(currentParticle.getVelocity());
-			} else {
-				prevParticle = currentParticle.clone();
-				prevParticles.add(prevParticle);
+				//prevParticle = optionalPrevParticle.get();
+				//prevParticle.setPosition(currentParticle.getPosition());
+				//prevParticle.setVelocity(currentParticle.getVelocity());
+				
+				prevParticles.remove(optionalPrevParticle.get());
 			}
+			prevParticles.add(currentParticle);
 		}
 	}
 
@@ -528,6 +524,8 @@ public class PredictiveCollisionAvoidanceManager {
 			predictedParticles.add(predictedParticle);
 		}
 		
+		// TODO ARREGLAR REFERENCIAS EN PREDICTED PARTICLES
+		
 		return predictedParticles;
 	}
 
@@ -561,6 +559,8 @@ public class PredictiveCollisionAvoidanceManager {
     	for(Particle particle : currentParticles) {
 			previousParticles.add(initPrevParticle(particle, currentParticles));
 		}
+    	
+    	// TODO ARREGLAR REFERENCIAS EN PREVIOUS PARTICLES (asumiendo que habria proyectiles al comienzo)
 		
 		return previousParticles;
 	}
