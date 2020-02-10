@@ -261,7 +261,7 @@ public class PredictiveCollisionAvoidanceManager {
 			if(reprocessedCollision != null) {
 				Point evasiveForce = getEvasiveForce(particle, collision.getParticle(), 
 						reprocessedCollision.getTime(), desiredVelocity);
-				desiredVelocity = desiredVelocity.getSumVector(evasiveForce).getScalarMultiplication(timeStep);
+				desiredVelocity = desiredVelocity.getSumVector(evasiveForce.getScalarMultiplication(timeStep));
 				//if((particle.getId() == 18 || particle.getId() == 20) && evasiveForce.getNorm() > 2000) System.out.println("BIG EV " + particle.getId() + " " + reprocessedCollision.getParticle().getId() + " " + reprocessedCollision.getTime() + " " + evasiveForce.getNorm() + " " + evasiveForce);
 				//if(Double.compare(accumulatedTime, 21.22189999996388) == 0 && particle.getId() == 20) System.out.println("SI");
 				accumulatedEvasiveForce = accumulatedEvasiveForce.getSumVector(evasiveForce);
