@@ -35,15 +35,6 @@ public class Particle implements Cloneable {
 		this.velocity = new Point(vx, vy, vz);
 	}
 	
-//	public Particle(final double radius, final double mass, final double x, final double y, final double vx, final double vy) {
-//		this.id = count++;
-//		this.radius = radius;
-//		this.mass = mass;
-//		this.position = new Point2D.Double(x, y);
-//		this.velocity = new Point2D.Double(vx, vy);
-//		this.neighbors = new HashSet<>();
-//	}
-//	
 	public Particle(int id, double radius, double mass, double x, double y, double z, double vx, double vy, double vz) {
 		count++; // TODO OPTIONAL: SI ES CLONE NO AUMENTAR COUNT
 		this.id = id;
@@ -76,12 +67,12 @@ public class Particle implements Cloneable {
 		return Objects.hash(id);
 	}
 	
-//	@Override
-//	public String toString() {
-//		return "id: " + id + "; radius: " + radius + " ; mass: " + mass + " ; x: " + position.x
-//				+ " ; y: " + position.y + " ; vx: " + velocity.x + " ; vy: " + velocity.y;
-//	}
-	
+	@Override
+	public String toString() {
+		return "Particle [id=" + id + ", radius=" + radius + ", mass=" + mass + ", position=" + position + ", velocity="
+				+ velocity + "]";
+	}
+
 	@Override
 	public Particle clone() {
 		return new Particle(id, radius, mass, position.getX(), position.getY(), position.getZ(), 
@@ -142,10 +133,6 @@ public class Particle implements Cloneable {
 //		double horizontalDistance = Math.abs(getPosition().x - other.getPosition().x);
 //		double verticalDistance = Math.abs(getPosition().y - other.getPosition().y);
 //		return Math.sqrt(Math.pow(horizontalDistance, 2) + Math.pow(verticalDistance, 2));
-//	}
-//	
-//	public Point2D.Double getRelativeVelocity(final Particle other) {
-//		return new Point2D.Double(velocity.getX() - other.getVelocity().getX(), velocity.getY() - other.getVelocity().getY());
 //	}
 
 }

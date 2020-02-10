@@ -5,7 +5,6 @@ import java.util.List;
 
 public class Grid {
 	
-	//private List<Particle> particles;
 	private RebelShip rebelShip;
 	private DeathStar deathStar;
 	private List<Turret> turrets;
@@ -16,9 +15,8 @@ public class Grid {
 	private final double height;
 	
 	public Grid(final List<Particle> particles) {
-		//this.particles = particles;
-		this.rebelShip = (RebelShip)particles.get(0);
-		this.deathStar = (DeathStar)particles.get(1);
+		this.rebelShip = (RebelShip)particles.get(Configuration.REBEL_SHIP_INDEX);
+		this.deathStar = (DeathStar)particles.get(Configuration.DEATH_STAR_INDEX);
 		this.turrets = Configuration.getTurrets();
 		this.drones = Configuration.getDrones();
 		this.projectiles = new ArrayList<>();
@@ -27,14 +25,62 @@ public class Grid {
 		this.height = Configuration.HEIGHT;
 	}
 	
-//	public List<Particle> getParticles() {
-//		return particles;
-//	}
+	public boolean rebelShipHasCollided() {
+		return hasCollided(rebelShip);
+	}
 	
-//	public void setParticles(List<Particle> newParticles) {
-//		Objects.requireNonNull(newParticles);
-//		this.particles = newParticles;
-//	}
+	public void deleteOutOfBoundsProjectiles() {
+    	List<Projectile> toDelete = new ArrayList<>();
+    	for(Projectile p : projectiles) {
+    		Point pos = p.getPosition();
+    		if(pos.getX() < 0 || pos.getY() < 0 || pos.getZ() < 0 || pos.getX() > Configuration.WIDTH
+    				|| pos.getY() > Configuration.HEIGHT || pos.getZ() > Configuration.DEPTH
+    				|| p.inContact(deathStar)) {
+    			toDelete.add(p);
+    			if(p.getShooter() != null) {
+    				p.getShooter().getProjectiles().remove(p);
+    			}
+    		}
+    	}
+    	projectiles.removeAll(toDelete);
+	}
+	
+	public void checkDroneCollisions() {
+		List<Drone> toDelete = new ArrayList<>();
+		for(Drone drone : drones) {
+			if(hasCollided(drone)) {
+				toDelete.add(drone);
+			}
+		}
+		if(!toDelete.isEmpty()) {
+			for(Drone drone : toDelete) {
+				drone.getProjectiles().forEach(p -> p.setShooter(null));
+				drones.remove(drone);
+			}
+		}
+	}
+	
+	private boolean hasCollided(Particle particle) {
+		for(Projectile projectile : projectiles) {
+			if(particle instanceof RebelShip || (particle instanceof Drone && !((Drone)particle).getProjectiles().contains(projectile))) {
+				if(particle.inContact(projectile)) {
+					return true;
+				}
+			}
+		}
+		for(Turret turret : turrets) {
+			if(particle.inContact(turret)) {
+				return true;
+			}
+		}
+		for(Drone drone : drones) {
+			if(!particle.equals(drone) && particle.inContact(drone)) {
+				return true;
+			}
+		}
+		
+		return particle.inContact(deathStar);
+	}
 	
 	public RebelShip getRebelShip() {
 		return rebelShip;

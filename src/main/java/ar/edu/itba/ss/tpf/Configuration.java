@@ -35,14 +35,15 @@ public class Configuration {
 	public static final int PROJECTILE_PARTICLE_COUNT = 3;
 	public static final double TURRET_PROJECTILE_RADIUS = 0.3; // m
 	public static final double TURRET_PROJECTILE_SPEED = 25; // m/s
-	public static final int TURRET_COUNT = 5;
+	private static final int TURRET_LAYER_COUNT = 3;
+	public static final int TURRET_COUNT_PER_LAYER = 5;
 	
 	private static List<Drone> drones = new ArrayList<Drone>();
 	public static final double DRONE_RADIUS = 1.0; // m
 	public static final double DRONE_MASS = 0.5;
 	public static final double DRONE_DESIRED_VEL = 5.0;
 	public static final double DRONE_MAX_VEL = DRONE_DESIRED_VEL;
-	public static final int DRONE_COUNT = 5;
+	public static final int DRONE_COUNT = 15;
 	
 	public static final double COLLISION_PREDICTION_TIME_LIMIT = 1.5;
 	public static final int COLLISION_AWARENESS_COUNT = 30;
@@ -61,6 +62,9 @@ public class Configuration {
 	public static final double DESIRED_VEL = 5.0; // m/s
 	public static final double REBEL_SHIP_MAX_VEL = 3 * DESIRED_VEL;
 	public static final double TAU = 0.5; // s
+	
+	public static final int REBEL_SHIP_INDEX = 0;
+	public static final int DEATH_STAR_INDEX = 1;
 	
 	private static double timeLimit;
 	private static boolean readFromFile;
@@ -213,7 +217,7 @@ public class Configuration {
 		} else if(index == 1) {
 			/* Death Star */
 			return new DeathStar(id, radius, x, y, z, vx, vy, vz);
-		} else if(index > 1 && index <= 1 + 3 * TURRET_COUNT) {
+		} else if(index > 1 && index <= 1 + TURRET_LAYER_COUNT * TURRET_COUNT_PER_LAYER) {
 			/* Turret */
 			Turret turret = new Turret(id, radius, x, y, z, vx, vy, vz);
 			turrets.add(turret);
@@ -257,7 +261,7 @@ public class Configuration {
     
     @SuppressWarnings("unused")
 	private static void createTurrets() {
-    	if(TURRET_COUNT == 0) {
+    	if(TURRET_COUNT_PER_LAYER == 0) {
     		return;
     	}
     	
@@ -274,8 +278,8 @@ public class Configuration {
     	turrets.add(new Turret(x, y, z));
     	
     	Point diffVector = (new Point(x, y, z)).getDiffVector(DEATH_STAR_POSITION);
-    	double deltaAngle = 2 * Math.PI / TURRET_COUNT;
-    	for(int i = 1; i < TURRET_COUNT; i++) {
+    	double deltaAngle = 2 * Math.PI / TURRET_COUNT_PER_LAYER;
+    	for(int i = 1; i < TURRET_COUNT_PER_LAYER; i++) {
     		
     		x = diffVector.getX() * Math.cos(deltaAngle) - diffVector.getZ() * Math.sin(deltaAngle);
     		z = diffVector.getX() * Math.sin(deltaAngle) + diffVector.getZ() * Math.cos(deltaAngle);
@@ -372,8 +376,5 @@ public class Configuration {
 	public static boolean isGoalTimeLimit() {
 		return Double.compare(timeLimit, -1.0) == 0;
 	}
-
-//	public static double getTimeStep() {
-//		return timeStep;
-//	}
+	
 }
