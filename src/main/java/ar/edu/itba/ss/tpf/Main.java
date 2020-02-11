@@ -7,12 +7,12 @@ import java.util.concurrent.TimeUnit;
 public class Main {
 	
 	private static Grid grid;
-	private static PredictiveCollisionAvoidanceManager pca;
+	private static PredictiveCollisionAvoidance pca;
 	private static BeemanIntegrator integrator;
 	private static double accumulatedTime = 0.0;
 	private static double timeStep;
 	
-	private static final double EPSILON = 1; // TODO SACAR Y USAR DEATH STAR SAFE DISTANCE
+	private static final double GOAL_EPSILON = 0.5;
 	
 	public static void main(String[] args) {
 		Configuration.requestParameters();
@@ -27,7 +27,7 @@ public class Main {
 		List<Particle> particles = Configuration.initializeParticles();
 		
 		grid = new Grid(particles);
-		pca = new PredictiveCollisionAvoidanceManager(grid);
+		pca = new PredictiveCollisionAvoidance(grid);
 		integrator = new BeemanIntegrator(grid, pca);
 		
 		execute();
@@ -71,7 +71,7 @@ public class Main {
 			return true;
 		}
 		
-		if(pca.getRebelShipGoal().getDiffVector(grid.getRebelShip().getPosition()).getNorm() < EPSILON) {
+		if(pca.getRebelShipGoal().getDiffVector(grid.getRebelShip().getPosition()).getNorm() < GOAL_EPSILON) {
 			System.out.println("Death star has been destroyed!");
 			return true;
 		}

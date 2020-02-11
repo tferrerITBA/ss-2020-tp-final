@@ -22,11 +22,10 @@ public class Configuration {
 	public static final double DEPTH = 100.0; // m
 	
 	public static final double REBEL_SHIP_RADIUS = 1.5; // m
-	public static final double REBEL_SHIP_MASS = 1.0; // m CAMBIAR
+	public static final double REBEL_SHIP_MASS = 1.0;
 	public static final Point REBEL_SHIP_INIT_POSITION = new Point(WIDTH / 8, HEIGHT / 2, DEPTH / 2);
 	
 	public static final double DEATH_STAR_RADIUS = 20.0; // m
-	//public static final double DEATH_STAR_MASS = 10.0; // m CAMBIAR
 	public static Point DEATH_STAR_POSITION = new Point(WIDTH - DEATH_STAR_RADIUS - (DEPTH - 2 * DEATH_STAR_RADIUS) / 2, HEIGHT / 2, DEPTH / 2);
 	
 	private static List<Turret> turrets = new ArrayList<Turret>();
@@ -58,7 +57,7 @@ public class Configuration {
 	public static final double DEATH_STAR_SAFE_DISTANCE = 1.0;
 	public static final int K_CONSTANT = 2;
 	
-	public static final double TIME_STEP = 0.0001;// * Math.sqrt(PARTICLE_MASS / K_NORM); // s
+	public static final double TIME_STEP = 0.0001; // s
 	public static final double DESIRED_VEL = 5.0; // m/s
 	public static final double REBEL_SHIP_MAX_VEL = 3 * DESIRED_VEL;
 	public static final double TAU = 0.5; // s
@@ -69,16 +68,6 @@ public class Configuration {
 	private static double timeLimit;
 	private static boolean readFromFile;
 	private static String fileName = "";
-	///////
-//	public static final double A_CONSTANT = 2000; // N
-//	public static final double B_CONSTANT = 0.08; // m
-//	public static final double MIN_PARTICLE_RADIUS = 0.25; // m
-//	public static final double MAX_PARTICLE_RADIUS = 0.35; // m
-//	public static final double K_NORM = 1.2e5; // kg/s^2
-//	public static final double K_TANG = 2 * K_NORM; // kg/(m s)
-	//public static final double PARTICLE_MASS = 80; // kg
-	//private static double timeStep = 0.1 * Math.sqrt(PARTICLE_MASS / K_NORM);
-//	private static final int INVALID_POSITION_LIMIT = 500;
 	
 	public static void requestParameters() {
 		Scanner scanner = new Scanner(System.in);
@@ -156,8 +145,6 @@ public class Configuration {
 
 		try(FileWriter fw = new FileWriter(inputFile)) {
 			inputFile.createNewFile();
-			//fw.write("0\n");
-
 			for(Particle p : particles) {
 				fw.write(p.getId() + " " + p.getRadius() + " " 
 						+ p.getPosition().getX() + " " + p.getPosition().getY() + " " + p.getPosition().getZ() + " " 

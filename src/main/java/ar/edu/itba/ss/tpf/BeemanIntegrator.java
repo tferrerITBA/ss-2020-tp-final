@@ -8,10 +8,10 @@ import java.util.stream.Collectors;
 public class BeemanIntegrator {
 	
 	private final Grid grid;
-	private final PredictiveCollisionAvoidanceManager pca;
+	private final PredictiveCollisionAvoidance pca;
 	private final double timeStep;
 	
-	public BeemanIntegrator(final Grid grid, final PredictiveCollisionAvoidanceManager pca) {
+	public BeemanIntegrator(final Grid grid, final PredictiveCollisionAvoidance pca) {
 		this.grid = grid;
 		this.pca = pca;
 		this.timeStep = Configuration.TIME_STEP;
@@ -29,10 +29,7 @@ public class BeemanIntegrator {
 		currentParticles.addAll(grid.getDrones());
 		currentParticles.addAll(grid.getProjectiles());
 		
-		//List<Particle> predictedParticles = new ArrayList<>();
-		//currentParticles.forEach(p -> predictedParticles.add(p.clone()));
-		
-		List<Particle> predictedParticles = predictParticles(/*predictedParticles, */currentParticles, prevParticles);
+		List<Particle> predictedParticles = predictParticles(currentParticles, prevParticles);
     	
     	List<Particle> updatedParticles = new ArrayList<>(currentParticles.size());
     	
@@ -43,8 +40,6 @@ public class BeemanIntegrator {
 			Point prevAcceleration = null;
 			if(optionalPrevParticle.isPresent()) {
 				prevParticle = optionalPrevParticle.get();
-//				if(currentParticle.getId() == 21 && accumulatedTime > 41.935 && accumulatedTime < 41.936)
-//					System.out.println("PREV ACC");
 				prevAcceleration = pca.getAcceleration(prevParticle, prevParticles);
 			} else {
 				prevAcceleration = new Point();
@@ -53,11 +48,7 @@ public class BeemanIntegrator {
 			Particle predParticle = predictedParticles.stream().filter(p -> p.getId() == currentParticle.getId()).findFirst().get();
 			Particle updatedParticle = currentParticle.clone();
 			
-//			if(currentParticle.getId() == 21 && accumulatedTime > 41.935 && accumulatedTime < 41.936)
-//				System.out.println("CURR ACC");
 			Point currAcceleration = pca.getAcceleration(currentParticle, currentParticles);
-//			if(currentParticle.getId() == 21 && accumulatedTime > 41.935 && accumulatedTime < 41.936)
-//				System.out.println("PRED ACC");
 			Point predAcceleration = pca.getAcceleration(predParticle, predictedParticles);
 			
 			Point correctedVelocity = currentParticle.getVelocity()
@@ -70,29 +61,18 @@ public class BeemanIntegrator {
 			} else if(currentParticle instanceof Drone && correctedVelocity.getNorm() > Configuration.DRONE_MAX_VEL) {
 				correctedVelocity = correctedVelocity.normalize().getScalarMultiplication(Configuration.DRONE_MAX_VEL);
 			}
-//			if(currentParticle.getId() == 21 && accumulatedTime > 41.935 && accumulatedTime < 41.936)
-//				System.out.println("CURR ACC " + currAcceleration + " PRED ACC " + predAcceleration + " PREV ACC " + prevAcceleration + " CORR VEL " + correctedVelocity);
-			//if(accumulatedTime < 0.001 && currentParticle.getId() == 0) System.out.println("PREV ACC: " + prevAcceleration + " " + prevAcceleration.getNorm() + ", CURR ACC: " + currAcceleration + " " + currAcceleration.getNorm() + ", PRED ACC: " + predAcceleration + " " + predAcceleration.getNorm() + ", PREV VEL: " + prevParticle.getVelocity() + " " + prevParticle.getVelocity().getNorm() + ", CURR VEL: " + currentParticle.getVelocity() + " " + currentParticle.getVelocity().getNorm() + ", PRED VEL: " + predParticle.getVelocity() + " " + predParticle.getVelocity().getNorm() + ", CORR VEL " + correctedVelocity + " " + correctedVelocity.getNorm());
-			//prevParticle.setPosition(currentParticle.getPosition());
-			//prevParticle.setVelocity(currentParticle.getVelocity());
+
 			updatedParticle.setPosition(predParticle.getPosition());
 			updatedParticle.setVelocity(correctedVelocity);
 			updatedParticles.add(updatedParticle);
 		}
 		
 		updateProjectileReferences(updatedParticles);
-		
-//		if(accumulatedTime > 41.935 && accumulatedTime < 41.936) {
-//			Particle p = updatedParticles.stream().filter(pa -> pa.getId() == 21).findFirst().get();
-//			System.out.println("UPD ACC");
-//			System.out.println("CORR ACC " + getAcceleration(p, updatedParticles));
-//		}
 			
 		return updatedParticles;
 	}
 	
-	private List<Particle> predictParticles(/*final List<Particle> predictedParticles,*/
-			final List<Particle> currentParticles, final List<Particle> prevParticles) {
+	private List<Particle> predictParticles(final List<Particle> currentParticles, final List<Particle> prevParticles) {
 		List<Particle> predictedParticles = new ArrayList<>();
 		
 		for(Particle currentParticle : currentParticles) {
@@ -123,13 +103,7 @@ public class BeemanIntegrator {
 				predictedVelocity = predictedVelocity.normalize().getScalarMultiplication(Configuration.DRONE_MAX_VEL);
 			}
 			
-//			if(currentParticle.getId() == 21 && accumulatedTime > 41.935 && accumulatedTime < 41.936) {
-//				System.out.println("NEW POS: " + newPosition + " CURR ACC: " + currAcceleration + " " + currAcceleration.getNorm() + " PREV ACC: " + prevAcceleration + " " + prevAcceleration.getNorm() + " CURR VEL: " + currentParticle.getVelocity() + " " + currentParticle.getVelocity().getNorm() + " PRED VEL: " + predictedVelocity + " " + predictedVelocity.getNorm());
-//				System.out.println(currentParticle.getPosition().getX() + " " + currentParticle.getVelocity().getX() + " "
-//						+ timeStep + " " + (currAcceleration.getX() * timeStep * timeStep) + " " + ((currAcceleration.getX() * 2.0 * Math.pow(timeStep, 2))/ 3.0) + " " 
-//						+ (prevAcceleration.getX() / 6 * Math.pow(timeStep, 2)));
-//			}
-			Particle predictedParticle = currentParticle.clone();//predictedParticles.stream().filter(p -> p.getId() == currentParticle.getId()).findFirst().get();
+			Particle predictedParticle = currentParticle.clone();
 			predictedParticle.setPosition(newPosition);
 			predictedParticle.setVelocity(predictedVelocity);
 			predictedParticles.add(predictedParticle);
@@ -158,7 +132,6 @@ public class BeemanIntegrator {
 				drone.setProjectiles(updatedProjectiles);
 			} else if(particle instanceof Projectile) {
 				Projectile projectile = (Projectile) particle;
-				//System.out.println(particle + " " + projectile.getShooter() + " " + ((Particle) projectile.getShooter()));
 				/* Search for the updated object within the updated particles (if shooter is a Turret it remains static) */
 				if(projectile.getShooter() != null && !(projectile.getShooter() instanceof Turret)) {
 					referenceId = ((Particle) projectile.getShooter()).getId();
@@ -188,10 +161,6 @@ public class BeemanIntegrator {
 			/* New projectiles do not have a previous reference */
 			Optional<Particle> optionalPrevParticle = prevParticles.stream().filter(p -> p.getId() == currentParticle.getId()).findFirst();
 			if(optionalPrevParticle.isPresent()) {
-				//prevParticle = optionalPrevParticle.get();
-				//prevParticle.setPosition(currentParticle.getPosition());
-				//prevParticle.setVelocity(currentParticle.getVelocity());
-				
 				prevParticles.remove(optionalPrevParticle.get());
 			}
 			prevParticles.add(currentParticle);
@@ -201,13 +170,10 @@ public class BeemanIntegrator {
 	// Euler Algorithm evaluated in (-dt)
     public List<Particle> initPrevParticles(List<Particle> currentParticles) {
     	List<Particle> previousParticles = new ArrayList<>(currentParticles.size());
-    	
     	for(Particle particle : currentParticles) {
 			previousParticles.add(initPrevParticle(particle, currentParticles));
 		}
     	
-    	// TODO ARREGLAR REFERENCIAS EN PREVIOUS PARTICLES (asumiendo que habria proyectiles al comienzo)
-		
 		return previousParticles;
 	}
     
@@ -217,8 +183,8 @@ public class BeemanIntegrator {
     	Point acceleration = pca.getAcceleration(particle, currentParticles);
 		
     	Point prevPosition = particle.getPosition().getDiffVector(particle.getVelocity().getScalarMultiplication(timeStep))
-    			.getSumVector(acceleration.getScalarMultiplication(Math.pow(timeStep, 2) / 2.0)); // TODO INICIALIZAR EN CERO AMBOS?
-		Point prevVelocity = new Point();//particle.getVelocity().getDiffVector(acceleration.getScalarMultiplication(timeStep));
+    			.getSumVector(acceleration.getScalarMultiplication(Math.pow(timeStep, 2) / 2.0));
+		Point prevVelocity = particle.getVelocity().getDiffVector(acceleration.getScalarMultiplication(timeStep));
 		
 		prevParticle.setPosition(prevPosition);
 		prevParticle.setVelocity(prevVelocity);
