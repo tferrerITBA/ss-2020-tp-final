@@ -62,7 +62,6 @@ public class Main {
 			
 			grid.deleteOutOfBoundsProjectiles();
 			grid.checkDroneCollisions();
-			
 		}
 	}
 	

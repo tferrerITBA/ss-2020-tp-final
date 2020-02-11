@@ -138,20 +138,27 @@ public class PredictiveCollisionAvoidanceManager {
     	Point forceDirection = c_i.getDiffVector(c_j).normalize();
     	
     	double D = c_i.getDiffVector(particle.getPosition()).getNorm() + c_i.getDiffVector(c_j).getNorm() 
-    			- getPersonalSpace(particle, other)/*particle.getRadius()*/ - other.getRadius();//TODO PREGUNTAR
-    	double d_min = 0.25;
-    	double d_mid = 4;
-        double d_max = 5;
+    			- /*getPersonalSpace(particle, other)*/particle.getRadius() - other.getRadius();//TODO PREGUNTAR
+    	double d_min = getPersonalSpace(particle, other) - particle.getRadius();
+    	double d_mid = d_min * 1.5;
+        double d_max = d_min * 2;
         double forceMagnitude = 0;
-        double multiplier = 5;
+        double multiplier = 3000;
         if(D < d_min) {
         	forceMagnitude = 1/(D*D) * multiplier;
         } else if(D < d_mid) {
         	forceMagnitude = 1/(d_min*d_min) * multiplier;
         } else if(D < d_max) {
-        	forceMagnitude = (D - d_max) / (d_min * (d_mid - d_max)) * multiplier;
+        	forceMagnitude = (D - d_max) / (d_min*d_min * (d_mid - d_max)) * multiplier;
         }
-//        if(particle.getId() == 21 && accumulatedTime > 41.935 && accumulatedTime < 41.936) {
+//        if(collisionTime == 0 && (particle.getId() == 0 || other.getId() == 29))
+//        	System.out.println("EVASIVE FORCE " + forceMagnitude + " " + particle.getId() + " " + other.getId() + ", DIST " + particle.getPosition().getDiffVector(
+//        			other.getPosition()).getNorm() + ", D: " + D);
+        
+//        	System.out.println("D " + D + " PPOS " + particle.getPosition() + " OPOS " + other.getPosition() 
+//			+ " OVEL " + other.getVelocity() + " DV " + desiredVelocity + " CT " + collisionTime 
+//			+ " CI " + c_i + " CJ " + c_j);
+//        if(particle.getId() == 29 && accumulatedTime > 21.030 && accumulatedTime < 21.031) {
 //			System.out.println("D " + D + " PPOS " + particle.getPosition() + " OPOS " + other.getPosition() 
 //			+ " OVEL " + other.getVelocity() + " DV " + desiredVelocity + " CT " + collisionTime 
 //			+ " CI " + c_i + " CJ " + c_j);

@@ -51,8 +51,8 @@ public class Configuration {
 	public static final double REBEL_SHIP_TO_PROJECTILE_PERSONAL_SPACE = REBEL_SHIP_RADIUS + 0.5;
 	public static final double DRONE_TO_PROJECTILE_PERSONAL_SPACE = DRONE_RADIUS + 0.5;
 	public static final double DRONE_TO_DRONE_PERSONAL_SPACE = 5.0;
-	public static final double DRONE_TO_REBEL_SHIP_PERSONAL_SPACE = 15.0;
-	public static final double REBEL_SHIP_TO_DRONE_PERSONAL_SPACE = 15.0;
+	public static final double DRONE_TO_REBEL_SHIP_PERSONAL_SPACE = 10.0;
+	public static final double REBEL_SHIP_TO_DRONE_PERSONAL_SPACE = 20.0;
 	public static final double REBEL_SHIP_TO_TURRET_PERSONAL_SPACE = 15.0;
 	public static final double WALL_SAFE_DISTANCE = 10.0;
 	public static final double DEATH_STAR_SAFE_DISTANCE = 1.0;
