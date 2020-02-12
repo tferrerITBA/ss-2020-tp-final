@@ -23,12 +23,12 @@ def parseFile(filename):
 def parseDirectory(directory, parse=parseFile):
   return [parse(f) for f in glob.glob(directory + '/*')]
 
-
 def parseStep(lines):
   nextLines = int(lines.pop(0))
   time = float(lines.pop(0).split("Time=").pop())
-  particles = [ parseParticle(lines.pop(0)) for _ in range(nextLines)]
-  return Step(time, particles)
+  particle = parseParticle(lines.pop(0))
+  for _ in range(nextLines - 1): lines.pop(0)
+  return Step(time, particle)
 
 def parseParticle(line):
   properties = line.split(" ")

@@ -2,6 +2,18 @@ from calculator import calculateDistance, squareList, averageLists, linearRegres
 from functools import reduce #python 3
 import numpy
 
+def isSuccess(simulation):
+  return simulation.steps[-1].time != 100
+
+def calculateTraveledDistance(simulation):
+  positions = [step.particle.position() for step in simulation.steps]
+  distance = 0
+  lastPos = positions[0]
+  for i in range(len(positions)):
+    distance += calculateDistance(lastPos, positions[i])
+    lastPos = positions[i]
+  return distance
+
 def getBallDistancesFromOrigin(simulation):
   firstBall = simulation.steps[0].ball
   distances = [calculateDistance(firstBall.position(), step.ball.position()) for step in simulation.steps]
