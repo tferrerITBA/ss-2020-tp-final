@@ -34,3 +34,8 @@ class Simulation:
     return self.steps[len(self.steps)//2:]
   def getLastThird(self):
     return self.steps[-len(self.steps)//3:]
+
+class SimulationGroup:
+  def __init__(self, simulations, name):
+    self.simulations = simulations
+    self.name = name

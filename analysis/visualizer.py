@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from analyzer import calculateTraveledDistance, isSuccess, isFailure, isAll
-from parser import parseDirectoryFromArgs, parseModeFromArgs, parseTimesFile, parseDirectory
+from parser import parseDirectoryFromArgs, parseModeFromArgs, parseGroupDirectoryFromArgs
 from calculator import average
 import os
 import pickle
@@ -221,20 +221,21 @@ def saveFig(fig, name):
 #   ax.plot(rang, results, 'o', markersize=2) 
 #   saveFig(fig, '1_1bev')
 
-# TODO: Group by folders
-
-def rate(simulations, filt = isAll):
+def rate(simulationGroups, filt = isAll):
+  simulations = simulationGroups[0].simulations
   print("Calculating the success rate")
   success = len(list(filter(filt, simulations)))
   print(f'Success rate: {success/len(simulations) * 100}%')
 
-def traveledDistance(simulations, filt = isAll):
+def traveledDistance(simulationGroups, filt = isAll):
+  simulations = simulationGroups[0].simulations
   print("Calculating the average traveled distance")
   filtSims = list(filter(filt, simulations))
   avgDistance = average([calculateTraveledDistance(simulation) for simulation in filtSims])
   print(f'Average distance traveled: {avgDistance}')
 
-def traveledTime(simulations, filt = isAll):
+def traveledTime(simulationGroups, filt = isAll):
+  simulations = simulationGroups[0].simulations
   print("Calculating the average time traveled")
   filtSims = list(filter(filt, simulations))
   avgDistance = average([simulation.steps[-1].time for simulation in filtSims])
@@ -246,15 +247,15 @@ def run():
   mode = parseModeFromArgs()
   
   print("Parse simulations")
-  simulations = parseDirectoryFromArgs()
+  simulationGroups = parseGroupDirectoryFromArgs()
 
-  if mode == 1: traveledDistance(simulations)
-  elif mode == 2: traveledDistance(simulations, isSuccess)
-  elif mode == 2: traveledDistance(simulations, isFailure)
-  elif mode == 3: traveledTime(simulations)
-  elif mode == 4: traveledTime(simulations, isSuccess)
-  elif mode == 5: traveledTime(simulations, isFailure)
-  elif mode == 6: rate(simulations)
-  elif mode == 7: rate(simulations, isSuccess)
-  elif mode == 8: rate(simulations, isFailure)
+  if mode == 1: traveledDistance(simulationGroups)
+  elif mode == 2: traveledDistance(simulationGroups, isSuccess)
+  elif mode == 3: traveledDistance(simulationGroups, isFailure)
+  elif mode == 4: traveledTime(simulationGroups)
+  elif mode == 5: traveledTime(simulationGroups, isSuccess)
+  elif mode == 6: traveledTime(simulationGroups, isFailure)
+  elif mode == 7: rate(simulationGroups)
+  elif mode == 8: rate(simulationGroups, isSuccess)
+  elif mode == 9: rate(simulationGroups, isFailure)
 run()
