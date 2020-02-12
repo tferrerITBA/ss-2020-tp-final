@@ -5,6 +5,12 @@ import numpy
 def isSuccess(simulation):
   return simulation.steps[-1].time != 100
 
+def isFailure(simulation):
+  return simulation.steps[-1].time != 100
+
+def isAll(simulation):
+  return True
+
 def calculateTraveledDistance(simulation):
   positions = [step.particle.position() for step in simulation.steps]
   distance = 0

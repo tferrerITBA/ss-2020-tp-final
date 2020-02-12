@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from analyzer import calculateTraveledDistance, isSuccess
+from analyzer import calculateTraveledDistance, isSuccess, isFailure, isAll
 from parser import parseDirectoryFromArgs, parseModeFromArgs, parseTimesFile, parseDirectory
 from calculator import average
 import os
@@ -223,19 +223,21 @@ def saveFig(fig, name):
 
 # TODO: Group by folders
 
-def successRate(simulations):
+def rate(simulations, filt = isAll):
   print("Calculating the success rate")
-  success = len(list(filter(isSuccess, simulations)))
+  success = len(list(filter(filt, simulations)))
   print(f'Success rate: {success/len(simulations) * 100}%')
 
-def traveledDistance(simulations):
+def traveledDistance(simulations, filt = isAll):
   print("Calculating the average traveled distance")
-  avgDistance = average([calculateTraveledDistance(simulation) for simulation in simulations])
+  filtSims = list(filter(filt, simulations))
+  avgDistance = average([calculateTraveledDistance(simulation) for simulation in filtSims])
   print(f'Average distance traveled: {avgDistance}')
 
-def traveledTime(simulations):
+def traveledTime(simulations, filt = isAll):
   print("Calculating the average time traveled")
-  avgDistance = average([simulation.steps[-1].time for simulation in simulations])
+  filtSims = list(filter(filt, simulations))
+  avgDistance = average([simulation.steps[-1].time for simulation in filtSims])
   print(f'Average time traveled: {avgDistance}')
 
 def run():
@@ -247,6 +249,12 @@ def run():
   simulations = parseDirectoryFromArgs()
 
   if mode == 1: traveledDistance(simulations)
-  elif mode == 2: traveledTime(simulations)
-  elif mode == 3: successRate(simulations)
+  elif mode == 2: traveledDistance(simulations, isSuccess)
+  elif mode == 2: traveledDistance(simulations, isFailure)
+  elif mode == 3: traveledTime(simulations)
+  elif mode == 4: traveledTime(simulations, isSuccess)
+  elif mode == 5: traveledTime(simulations, isFailure)
+  elif mode == 6: rate(simulations)
+  elif mode == 7: rate(simulations, isSuccess)
+  elif mode == 8: rate(simulations, isFailure)
 run()

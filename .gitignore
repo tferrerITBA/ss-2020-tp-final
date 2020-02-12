@@ -5,6 +5,7 @@
 bin
 *.iml
 .idea
+.DS_Store
 
 test-input.txt
 
