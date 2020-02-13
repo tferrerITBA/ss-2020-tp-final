@@ -13,7 +13,7 @@ def saveFig(fig, name):
     os.makedirs(OUTPUT_FOLDER)
   fig.savefig(f'{OUTPUT_FOLDER}/{name}.png')
 
-def rate(simulationGroups, filt = isAll, name = "rate"):
+def rate(simulationGroups, filt = isAll):
   xs = []
   ys = []
   
@@ -26,15 +26,25 @@ def rate(simulationGroups, filt = isAll, name = "rate"):
     xs.append(simulationGroup.name)
     ys.append(rate)
   
-  fig, ax = plt.subplots()
-  ax.set_ylabel('Tasa de éxito [%]')
-  ax.set_xlabel('Cantidad de enemigos')
-  fig.tight_layout()
-  ax.plot(xs, ys, 'o-', markersize=4)
-  
-  saveFig(fig, name)
+  return xs,ys
 
-def traveledDistance(simulationGroups, filt = isAll, name = "dist"):
+def rateGraph(simulationGroups):
+  fig, ax = plt.subplots()
+  ax.set_ylabel('Tasa [%]')
+  ax.set_xlabel('Cantidad de enemigos')
+
+  xs, ys = rate(simulationGroups, isSuccess)
+  ax.plot(xs, ys, 'go-', markersize=4, label='Misión Completa')
+  
+  xs, ys = rate(simulationGroups, isFailure)
+  ax.plot(xs, ys, 'ro-', markersize=4, label='Muerte del rebelde')
+
+  ax.legend()
+  
+  fig.tight_layout()
+  saveFig(fig, "rate")
+
+def traveledDistance(simulationGroups, filt = isAll):
   xs = []
   ys = []
   errs = []
@@ -50,17 +60,27 @@ def traveledDistance(simulationGroups, filt = isAll, name = "dist"):
     ys.append(avgDistance)
     errs.append(numpy.nanstd(distances))
   
+  return xs, ys, errs
+
+def traveledDistanceGraph(simulationGroups):
   fig, ax = plt.subplots()
   ax.set_ylabel('Distancia recorrida [m]')
   ax.set_xlabel('Cantidad de enemigos')
-  fig.tight_layout()
+  
+  xs, ys, errs = traveledDistance(simulationGroups)
+  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=5, capthick=2, fmt="o-", zorder=1, markersize=4, label="Todos los escenarios") 
+  [bar.set_alpha(0.5) for bar in bars]
 
-  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=5, capthick=2, fmt="o-", zorder=1, markersize=4) 
+  xs, ys, errs = traveledDistance(simulationGroups, isSuccess)
+  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=5, capthick=2, fmt="go-", zorder=1, markersize=4, label="Misión Completa") 
   [bar.set_alpha(0.5) for bar in bars]
   
-  saveFig(fig, name)
+  ax.legend()
 
-def traveledTime(simulationGroups, filt = isAll, name = "time"):
+  fig.tight_layout()
+  saveFig(fig, "distance")
+
+def traveledTime(simulationGroups, filt = isAll):
   xs = []
   ys = []
   errs = []
@@ -76,15 +96,25 @@ def traveledTime(simulationGroups, filt = isAll, name = "time"):
     ys.append(avgTime)
     errs.append(numpy.nanstd(times))
   
+  return xs, ys, errs  
+
+def traveledTimeGraph(simulationGroups):
   fig, ax = plt.subplots()
   ax.set_ylabel('Tiempo recorrido [s]')
   ax.set_xlabel('Cantidad de enemigos')
-  fig.tight_layout()
 
-  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=5, capthick=2, fmt="o-", zorder=1, markersize=4) 
+  xs, ys, errs = traveledTime(simulationGroups)
+  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=5, capthick=2, fmt="o-", zorder=1, markersize=4, label="Todos los escenarios") 
   [bar.set_alpha(0.5) for bar in bars]
-  
-  saveFig(fig, name)
+
+  xs, ys, errs = traveledTime(simulationGroups, isSuccess)
+  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=5, capthick=2, fmt="go-", zorder=1, markersize=4, label="Misión Completa") 
+  [bar.set_alpha(0.5) for bar in bars]
+
+  ax.legend()
+
+  fig.tight_layout()
+  saveFig(fig, "time")
 
 def run():
   print("Las imágenes se guardan en la carpeta output de la raiz del proyecto.")
@@ -93,23 +123,10 @@ def run():
   
   print("Parse simulations")
   simulationGroups = parseGroupDirectoryFromArgs()
-
   simulationGroups.sort(key=lambda x: x.name, reverse=True)
 
-  traveledDistance(simulationGroups)
-  traveledDistance(simulationGroups, isSuccess, "dist_success")
-  traveledTime(simulationGroups)
-  traveledTime(simulationGroups, isSuccess, "time_success")
-  rate(simulationGroups)
-  rate(simulationGroups, isSuccess, "rate_success")
+  traveledDistanceGraph(simulationGroups)
+  traveledTimeGraph(simulationGroups)
+  rateGraph(simulationGroups)
   
-  if mode == 1: traveledDistance(simulationGroups)
-  elif mode == 2: traveledDistance(simulationGroups, isSuccess, "dist_success")
-  elif mode == 3: traveledDistance(simulationGroups, isFailure, "dist_failure")
-  elif mode == 4: traveledTime(simulationGroups)
-  elif mode == 5: traveledTime(simulationGroups, isSuccess, "time_success")
-  elif mode == 6: traveledTime(simulationGroups, isFailure, "time_failure")
-  elif mode == 7: rate(simulationGroups)
-  elif mode == 8: rate(simulationGroups, isSuccess, "rate_success")
-  elif mode == 9: rate(simulationGroups, isFailure, "rate_failure")
 run()
