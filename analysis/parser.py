@@ -4,7 +4,7 @@ import sys
 import os
 
 def parseGroupDirectoryFromArgs():
-  return [SimulationGroup(parseDirectory(f), os.path.basename(f)) for f in glob.glob(sys.argv[1] + '/*')]
+  return [SimulationGroup(parseDirectory(f), int(os.path.basename(f))) for f in glob.glob(sys.argv[1] + '/*')]
 
 def parseDirectoryFromArgs():
   return parseDirectory(sys.argv[1])
