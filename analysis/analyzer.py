@@ -3,10 +3,12 @@ from functools import reduce #python 3
 import numpy
 
 def isSuccess(simulation):
-  return simulation.steps[-1].time != 100
+  lastStep = simulation.steps[-1]
+  return lastStep.time != 100 and lastStep.particle.achievedGoal()
 
 def isFailure(simulation):
-  return simulation.steps[-1].time != 100
+  lastStep = simulation.steps[-1]
+  return simulation.steps[-1].time != 100 and not lastStep.particle.achievedGoal()
 
 def isAll(simulation):
   return True

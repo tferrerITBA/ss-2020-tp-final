@@ -12,6 +12,9 @@ class Particle:
     self.vy = float(vy)
     self.vz = float(vz)
   
+  def achievedGoal(self):
+    return abs(math.sqrt((self.x - 150) ** 2 + (self.y - 50) ** 2 + (self.z - 50) ** 2) - 22.5) <= 0.5
+  
   def getVelocityLength(self):
     return math.sqrt(self.vx ** 2  + self.vy ** 2 + self.vz ** 2)
   
