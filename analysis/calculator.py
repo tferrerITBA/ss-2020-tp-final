@@ -26,7 +26,8 @@ def stdevLists(lists):
   return numpy.nanstd(lists, axis=0 )
 
 # Returns the average of a list
-def average(lst):
+def average(lst, default = False):
+  if default and not lst: return 0
   return numpy.mean(lst)
 
 # Like range, but with decimal steps

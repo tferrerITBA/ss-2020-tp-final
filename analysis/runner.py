@@ -2,7 +2,7 @@ import os
 
 RESULTS_FOLDER = 'analysis/results'
 DEFAULT_OUTPUT = 'ovito_output.xyz'
-REPEAT = 30
+REPEAT = 15
 SIMULATION = 'java -jar target/tpes-1.0-SNAPSHOT.jar < params.txt &'
 
 # create results folder if it does not exist

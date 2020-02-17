@@ -18,7 +18,7 @@ def calculateTraveledDistance(simulation):
   distance = 0
   lastPos = positions[0]
   for i in range(len(positions)):
-    distance += calculateDistance(lastPos, positions[i])
+    distance += abs(calculateDistance(lastPos, positions[i]))
     lastPos = positions[i]
   return distance
 

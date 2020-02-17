@@ -16,6 +16,7 @@ def saveFig(fig, name):
 def rate(simulationGroups, filt = isAll):
   xs = []
   ys = []
+  errs = []
   
   for simulationGroup in simulationGroups:
     simulations = simulationGroup.simulations
@@ -31,7 +32,8 @@ def rate(simulationGroups, filt = isAll):
 def rateGraph(simulationGroups):
   fig, ax = plt.subplots()
   ax.set_ylabel('Tasa [%]')
-  ax.set_xlabel('Cantidad de enemigos')
+  ax.set_xlabel('Tiempo de recarga [s]')
+  # ax.set_xscale('log')
 
   xs, ys = rate(simulationGroups, isSuccess)
   ax.plot(xs, ys, 'go-', markersize=4, label='Misión Completa')
@@ -65,14 +67,19 @@ def traveledDistance(simulationGroups, filt = isAll):
 def traveledDistanceGraph(simulationGroups):
   fig, ax = plt.subplots()
   ax.set_ylabel('Distancia recorrida [m]')
-  ax.set_xlabel('Cantidad de enemigos')
+  ax.set_xlabel('Tiempo de recarga [s]')
+  # ax.set_xscale('log')
   
   xs, ys, errs = traveledDistance(simulationGroups)
-  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=5, capthick=2, fmt="o-", zorder=1, markersize=4, label="Todos los escenarios") 
+  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=7, capthick=2, fmt="o-", zorder=1, markersize=6, label="Todos los escenarios") 
   [bar.set_alpha(0.5) for bar in bars]
 
   xs, ys, errs = traveledDistance(simulationGroups, isSuccess)
-  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=5, capthick=2, fmt="go-", zorder=1, markersize=4, label="Misión Completa") 
+  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=7, capthick=2, fmt="go", zorder=1, markersize=6, label="Misión Completa") 
+  [bar.set_alpha(0.5) for bar in bars]
+
+  xs, ys, errs = traveledDistance(simulationGroups, isFailure)
+  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=7, capthick=2, fmt="ro", zorder=1, markersize=6, label="Muerte del rebelde") 
   [bar.set_alpha(0.5) for bar in bars]
   
   ax.legend()
@@ -101,14 +108,19 @@ def traveledTime(simulationGroups, filt = isAll):
 def traveledTimeGraph(simulationGroups):
   fig, ax = plt.subplots()
   ax.set_ylabel('Tiempo recorrido [s]')
-  ax.set_xlabel('Cantidad de enemigos')
+  ax.set_xlabel('Tiempo de recarga [s]')
+  # ax.set_xscale('log')
 
   xs, ys, errs = traveledTime(simulationGroups)
-  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=5, capthick=2, fmt="o-", zorder=1, markersize=4, label="Todos los escenarios") 
+  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=7, capthick=2, fmt="o-", zorder=1, markersize=6, label="Todos los escenarios") 
   [bar.set_alpha(0.5) for bar in bars]
 
   xs, ys, errs = traveledTime(simulationGroups, isSuccess)
-  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=5, capthick=2, fmt="go-", zorder=1, markersize=4, label="Misión Completa") 
+  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=7, capthick=2, fmt="go", zorder=1, markersize=6, label="Misión Completa") 
+  [bar.set_alpha(0.5) for bar in bars]
+
+  xs, ys, errs = traveledTime(simulationGroups, isFailure)
+  markers, caps, bars = ax.errorbar(xs, ys, yerr=errs, capsize=7, capthick=2, fmt="ro", zorder=1, markersize=6, label="Muerte del rebelde") 
   [bar.set_alpha(0.5) for bar in bars]
 
   ax.legend()
