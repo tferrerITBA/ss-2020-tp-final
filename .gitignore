@@ -5,6 +5,9 @@
 bin
 *.iml
 .idea
+.DS_Store
+__pycache__
+*.py[cod]
 
 test-input.txt
 
