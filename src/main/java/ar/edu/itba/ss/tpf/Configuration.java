@@ -298,9 +298,9 @@ public class Configuration {
 
 	public static boolean validateDronePosition(final double x, final double y, final double z) {
 		/* Only drones may overlap initially */
+		Point p = new Point(x, y, z);
     	for(Drone drone : drones) {
-            if(Math.sqrt(Math.pow(drone.getPosition().getX() - x, 2) + Math.pow(drone.getPosition().getY() - y, 2)
-            		+ Math.pow(drone.getPosition().getZ() - z, 2)) < 2 * DRONE_RADIUS)
+            if(drone.getPosition().getDiffVector(p).getNorm() < DRONE_RADIUS + DRONE_TO_DRONE_PERSONAL_SPACE)
                 return false;
         }
         return true;
